@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Calendar, Users, Eye, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-export const Dashboard = ({ patients, appointments=[], onNavigate }) => {
-  const [statsData, setStatsData] = useState(null);
+import { getDashboard } from "../services/patientApi"; // Make sure this import is correct
+
+export const Dashboard = ({ appointments = [] }) => {
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,16 +13,15 @@ export const Dashboard = ({ patients, appointments=[], onNavigate }) => {
     if (!token) {
       navigate("/login");
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         const res = await getDashboard();
-        console.log(res);
-        setStatsData(res.data);
+        setStats(res);
       } catch (error) {
-        // alert("Failed to load dashboard stats");
+        setStats(null);
       } finally {
         setLoading(false);
       }
@@ -36,50 +33,44 @@ export const Dashboard = ({ patients, appointments=[], onNavigate }) => {
     return <div className="p-6">Loading dashboard...</div>;
   }
 
-  //   if (!statsData) {
-  //     return <div className="p-6 text-red-500">Failed to load dashboard stats.</div>;
-  //   }
+  if (!stats) {
+    return <div className="p-6 text-red-500">Failed to load dashboard stats.</div>;
+  }
 
+  // Today's appointments list (for the right panel)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const todayAppointments = appointments.filter((apt) => {
     const aptDate = new Date(apt.appointmentDate);
     aptDate.setHours(0, 0, 0, 0);
     return aptDate.getTime() === today.getTime();
   });
 
-  const totalRevenue = appointments.reduce(
-    (sum, apt) => sum + apt.paidAmount,
-    0
-  );
-  const pendingAmount = appointments.reduce(
-    (sum, apt) => sum + (apt.totalAmount - apt.paidAmount),
-    0
-  );
-
-  const stats = [
+  const statsList = [
     {
       title: "Total Patients",
-      value: 2,
+      value: stats.totalPatients,
       icon: Users,
       color: "bg-blue-500",
       bgColor: "bg-blue-50",
     },
     {
       title: "Today's Appointments",
-      value: 3,
+      value: stats.todaysAppointments,
       icon: Calendar,
       color: "bg-green-500",
       bgColor: "bg-green-50",
     },
     {
       title: "Total Revenue",
-      value: `₹${4}`,
+      value: `₹${stats.totalRevenue?.toLocaleString()}`,
       icon: Eye,
       color: "bg-purple-500",
       bgColor: "bg-purple-50",
     },
     {
       title: "Pending Amount",
-      value: `₹${4}`,
+      value: `₹${stats.pendingAmount?.toLocaleString()}`,
       icon: Filter,
       color: "bg-orange-500",
       bgColor: "bg-orange-50",
@@ -96,7 +87,7 @@ export const Dashboard = ({ patients, appointments=[], onNavigate }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
+        {statsList.map((stat, index) => (
           <div
             key={index}
             className={`${stat.bgColor} rounded-xl p-6 border border-gray-100`}
@@ -127,14 +118,14 @@ export const Dashboard = ({ patients, appointments=[], onNavigate }) => {
           </h2>
           <div className="space-y-3">
             <button
-              onClick={() => navigate("patients")}
+              onClick={() => navigate("/patients")}
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
               <Users className="w-5 h-5" />
               Manage Patients
             </button>
             <button
-              onClick={() => navigate("appointments")}
+              onClick={() => navigate("/appointments")}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
             >
               <Calendar className="w-5 h-5" />
