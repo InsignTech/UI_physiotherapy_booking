@@ -1,3 +1,5 @@
+import { ArrowLeft, ArrowRight } from "lucide-react";
+
 // Pagination Component
 export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
@@ -18,7 +20,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         </button>
         
         <div className="flex gap-1">
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          {Array.from({ length: Math.min(2, totalPages) }, (_, i) => {
             let pageNum;
             if (totalPages <= 5) {
               pageNum = i + 1;

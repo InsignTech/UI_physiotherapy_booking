@@ -1,33 +1,45 @@
 import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
 import { useState, useEffect } from 'react';
-import {   Eye , Plus, Search, X } from 'lucide-react';
-// Patient Management Component
+import { Eye, Plus, Search, X } from 'lucide-react';
+import { getAllPatients } from "../services/patientApi"; // Make sure this import path is correct
 
 export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
-  const itemsPerPage = 10;
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 2;
 
+  // Fetch patients from API
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await getAllPatients(currentPage, itemsPerPage);
+        setPatients(res.data || []);
+        setTotalPages(res.pagination?.totalPages || 1);
+      } catch (error) {
+        setPatients([]);
+        setTotalPages(1);
+      }
+    };
+    fetchPatients();
+  }, [currentPage, itemsPerPage]);
+
+  // Filtered patients for search (client-side)
   const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phoneNumber.toString().includes(searchTerm)
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phoneNumber?.toString().includes(searchTerm)
   );
 
-  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentPatients = filteredPatients.slice(startIndex, startIndex + itemsPerPage);
+  // Only show filtered patients for the current page
+  const currentPatients = filteredPatients;
 
   const handleAddPatient = (patientData) => {
-    const newPatient = {
-      ...patientData,
-      _id: `patient_${Date.now()}`,
-    };
-    setPatients([newPatient, ...patients]);
     setShowAddForm(false);
+    setCurrentPage(1); 
   };
 
   return (
@@ -37,10 +49,7 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
           <h1 className="text-3xl font-bold text-gray-800">Patient Management</h1>
           <p className="text-gray-600 mt-2">Manage your patients effectively</p>
         </div>
-        
-    
-
-         {!showAddForm ? (
+        {!showAddForm ? (
           <button
             onClick={() => setShowAddForm(true)}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -51,8 +60,9 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
         ) : (
           <button
             onClick={() => setShowAddForm(false)}
-           className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-            aria-label="Close" >
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+            aria-label="Close"
+          >
             <X className="w-5 h-5" />
             Close
           </button>
@@ -119,7 +129,7 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
                         className="text-gray-600 hover:text-gray-800 p-1"
                         title="Edit Patient"
                       >
-                        <Edit  />
+                        {/* Add Edit icon here if needed */}
                       </button>
                     </div>
                   </td>
