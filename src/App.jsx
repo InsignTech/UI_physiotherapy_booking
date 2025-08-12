@@ -29,7 +29,6 @@ const LoginScreen = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
 const handleLogin = async (e) => {
   e.preventDefault();
   try {
@@ -305,7 +304,7 @@ const PatientManagement = ({ onNavigate, onSelectPatient }) => {
                         className="text-gray-600 hover:text-gray-800 p-1"
                         title="Edit Patient"
                       >
-                        <Edit onClick={} />
+                        <Edit className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -511,19 +510,6 @@ const AppointmentManagement = ({ selectedPatient, onNavigate }) => {
     setAppointments([newAppointment, ...appointments]);
     setShowAddForm(false);
   };
-
-  const handleUpdatePatient = async (updatedPatientData) => {
-        try {
-            await updatePatient(editingPatient._id, updatedPatientData);
-            setPatients(patients.map(p =>
-                p._id === editingPatient._id ? { ...p, ...updatedPatientData } : p
-            ));
-            setEditingPatient(null);
-            alert("Patient updated successfully!");
-        } catch (error) {
-            alert("Failed to update patient.");
-        }
-    };
 
   return (
     <div className="p-6">
