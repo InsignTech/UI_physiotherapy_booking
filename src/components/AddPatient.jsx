@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { addPatient, updatePatient } from "../services/patientApi";
 
-export const AddPatientForm = ({ onSubmit, onCancel }) => {
+export const AddPatientForm = ({
+  onSubmit,
+  onCancel,
+  initialData = null,
+  isEdit = false,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -12,24 +18,18 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const patientData = {
-        ...formData,
-        age: parseInt(formData.age),
-        phoneNumber: parseInt(formData.phoneNumber),
-      };
-
-      // Call the API to add patient
-      const response = await addPatient(patientData);
-
-      // If API call is successful, call the onSubmit callback with the response data
-      onSubmit(response.data || patientData);
-
-      // Reset form
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        age: initialData.age || "",
+        gender: initialData.gender || "",
+        address: initialData.address || "",
+        phoneNumber: initialData.phoneNumber || "",
+        email: initialData.email || "",
+      });
+    } else {
+      // Reset form when switching to add mode
       setFormData({
         name: "",
         age: "",
@@ -38,15 +38,48 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
         phoneNumber: "",
         email: "",
       });
-      toast.success("Patient added successfully!");
+    }
+  }, [initialData]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const patientData = {
+        ...formData,
+        age: parseInt(formData.age),
+        phoneNumber: formData.phoneNumber,
+      };
+
+      let response;
+      if (isEdit && initialData?._id) {
+        response = await updatePatient(initialData._id, patientData);
+        toast.success("Patient updated successfully!");
+      } else {
+        response = await addPatient(patientData);
+        toast.success("Patient added successfully!");
+      }
+
+      onSubmit(response.data || patientData);
+
+      if (!isEdit) {
+        setFormData({
+          name: "",
+          age: "",
+          gender: "",
+          address: "",
+          phoneNumber: "",
+          email: "",
+        });
+      }
     } catch (error) {
-      // Handle API errors
       toast.error(
         error.response?.data?.message ||
           error.message ||
-          "Failed to add patient. Please try again."
+          `Failed to ${isEdit ? "update" : "add"} patient. Please try again.`
       );
-      console.error("Error adding patient:", error);
+      console.error("Error saving patient:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -55,7 +88,7 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        Add New Patient
+        {isEdit ? "Edit Patient" : "Add New Patient"}
       </h2>
       <form
         onSubmit={handleSubmit}
@@ -85,8 +118,8 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
             onChange={(e) => setFormData({ ...formData, age: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
-             min={0}
-             max={150}
+            min={0}
+            max={150}
             disabled={isSubmitting}
           />
         </div>
@@ -167,7 +200,13 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
             {isSubmitting && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             )}
-            {isSubmitting ? "Adding Patient..." : "Add Patient"}
+            {isSubmitting
+              ? isEdit
+                ? "Saving..."
+                : "Adding Patient..."
+              : isEdit
+              ? "Save Changes"
+              : "Add Patient"}
           </button>
           <button
             type="button"
