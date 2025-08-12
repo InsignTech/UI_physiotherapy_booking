@@ -23,10 +23,10 @@ export const getAllPatients = async (page = 1, limit = 10) => {
   }
 };
 
-export const searchPatients = async (name, phoneNumber) => {
+export const searchPatients = async (query) => {
   try {
     const response = await PATIENT_INSTANCE.get("/search", {
-      params: { name, phoneNumber },
+      params: {query },
     });
     return response.data;
   } catch (error) {

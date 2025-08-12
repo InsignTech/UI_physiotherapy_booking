@@ -2,7 +2,7 @@ import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
 import { useState, useEffect } from 'react';
 import { Eye, Plus, Search, X } from 'lucide-react';
-import { getAllPatients } from "../services/patientApi"; // Make sure this import path is correct
+import { getAllPatients, searchPatients } from "../services/patientApi";
 
 export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
   const [patients, setPatients] = useState([]);
@@ -10,36 +10,65 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 2;
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
 
   // Fetch patients from API
   useEffect(() => {
     const fetchPatients = async () => {
+      setLoading(true);
       try {
-        const res = await getAllPatients(currentPage, itemsPerPage);
+        let res;
+        if (searchTerm.trim()) {
+          // Use search function when there's a search term
+          res = await searchPatients(searchTerm.trim(), currentPage, itemsPerPage);
+        } else {
+          // Use regular fetch when no search term
+          res = await getAllPatients(currentPage, itemsPerPage);
+        }
+        
         setPatients(res.data || []);
         setTotalPages(res.pagination?.totalPages || 1);
+        setTotalPatients(res.pagination?.totalCount || 0);
       } catch (error) {
+        console.error("Error fetching patients:", error);
         setPatients([]);
         setTotalPages(1);
+        setTotalPatients(0);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchPatients();
-  }, [currentPage, itemsPerPage]);
 
-  // Filtered patients for search (client-side)
-  const filteredPatients = patients.filter(patient =>
-    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phoneNumber?.toString().includes(searchTerm)
-  );
+    // Debounce search to avoid too many API calls
+    const debounceTimer = setTimeout(() => {
+      fetchPatients();
+    }, searchTerm ? 500 : 0);
 
-  // Only show filtered patients for the current page
-  const currentPatients = filteredPatients;
+    return () => clearTimeout(debounceTimer);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   const handleAddPatient = (patientData) => {
     setShowAddForm(false);
-    setCurrentPage(1); 
+    setCurrentPage(1); // Reset to first page after adding
+    // The useEffect will automatically refetch data
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleItemsPerPageChange = (newLimit) => {
+    setItemsPerPage(newLimit);
+    setCurrentPage(1); // Reset to first page when changing limit
+  };
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   return (
@@ -47,7 +76,9 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Patient Management</h1>
-          <p className="text-gray-600 mt-2">Manage your patients effectively</p>
+          <p className="text-gray-600 mt-2">
+            Manage your patients effectively ({totalPatients} total patients)
+          </p>
         </div>
         {!showAddForm ? (
           <button
@@ -78,72 +109,98 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Search patients by name, email, or phone..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="relative flex-1">
+              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search patients by name, email, or phone..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
+            {/* Items per page selector */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">Show:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Name</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Age</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Gender</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Phone</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Email</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {currentPatients.map((patient) => (
-                <tr key={patient._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-800">{patient.name}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.age}</td>
-                  <td className="px-6 py-4 text-gray-600 capitalize">{patient.gender}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.phoneNumber}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.email}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          onSelectPatient(patient);
-                          onNavigate('appointments');
-                        }}
-                        className="text-blue-600 hover:text-blue-800 p-1"
-                        title="View Appointments"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="text-gray-600 hover:text-gray-800 p-1"
-                        title="Edit Patient"
-                      >
-                        {/* Add Edit icon here if needed */}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-gray-600">Loading patients...</div>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Name</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Age</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Gender</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Phone</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Email</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {patients.length > 0 ? (
+                    patients.map((patient) => (
+                      <tr key={patient._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 font-medium text-gray-800">{patient.name}</td>
+                        <td className="px-6 py-4 text-gray-600">{patient.age}</td>
+                        <td className="px-6 py-4 text-gray-600 capitalize">{patient.gender}</td>
+                        <td className="px-6 py-4 text-gray-600">{patient.phoneNumber}</td>
+                        <td className="px-6 py-4 text-gray-600">{patient.email}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                onSelectPatient(patient);
+                                onNavigate('appointments');
+                              }}
+                              className="text-blue-600 hover:text-blue-800 p-1"
+                              title="View Appointments"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                        {searchTerm ? 'No patients found matching your search.' : 'No patients found.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalPatients}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
       </div>
     </div>
   );
