@@ -1,7 +1,7 @@
 import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
 import { useState, useEffect } from 'react';
-import { Calendar, Users, Eye ,Filter, Plus, Search } from 'lucide-react';
+import {   Eye , Plus, Search, X } from 'lucide-react';
 // Patient Management Component
 
 export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
@@ -37,13 +37,26 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
           <h1 className="text-3xl font-bold text-gray-800">Patient Management</h1>
           <p className="text-gray-600 mt-2">Manage your patients effectively</p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Patient
-        </button>
+        
+    
+
+         {!showAddForm ? (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Add Patient
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowAddForm(false)}
+           className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+            aria-label="Close" >
+            <X className="w-5 h-5" />
+            Close
+          </button>
+        )}
       </div>
 
       {showAddForm && (
