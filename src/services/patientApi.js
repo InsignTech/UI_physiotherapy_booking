@@ -64,3 +64,13 @@ export const getPatientAppointments = async (id, page = 1, limit = 10) => {
   }
 };
 
+
+export const getDashboard = async () => {
+  try {
+    const response = await PATIENT_INSTANCE.get(`/dashboard`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
