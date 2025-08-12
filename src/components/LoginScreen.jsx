@@ -3,6 +3,7 @@ import { login } from "../services/userApi";
 import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 export const LoginScreen = ({ onLogin }) => {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export const LoginScreen = ({ onLogin }) => {
       localStorage.setItem("token", res.data);
       navigate("/dashboard");
     } catch (error) {
-      alert(error.response?.data?.msg || "invalid username or password");
+      toast.error(error.response?.data?.msg || "invalid username or password");
     }
   };
 

@@ -1,47 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 export const AddPatientForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    address: '',
-    phoneNumber: '',
-    email: ''
+    name: "",
+    age: "",
+    gender: "",
+    address: "",
+    phoneNumber: "",
+    email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const patientData = {
         ...formData,
         age: parseInt(formData.age),
-        phoneNumber: parseInt(formData.phoneNumber)
+        phoneNumber: parseInt(formData.phoneNumber),
       };
 
       // Call the API to add patient
       const response = await addPatient(patientData);
-      
+
       // If API call is successful, call the onSubmit callback with the response data
       onSubmit(response.data || patientData);
-      
+
       // Reset form
       setFormData({
-        name: '',
-        age: '',
-        gender: '',
-        address: '',
-        phoneNumber: '',
-        email: ''
+        name: "",
+        age: "",
+        gender: "",
+        address: "",
+        phoneNumber: "",
+        email: "",
       });
-      
+      toast.success("Patient added successfully!");
     } catch (error) {
       // Handle API errors
-      alert(error.response?.data?.message || error.message || "Failed to add patient. Please try again.");
-      console.error('Error adding patient:', error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to add patient. Please try again."
+      );
+      console.error("Error adding patient:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -49,10 +54,17 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Add New Patient</h2>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        Add New Patient
+      </h2>
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
           <input
             type="text"
             value={formData.name}
@@ -64,7 +76,9 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Age
+          </label>
           <input
             type="number"
             value={formData.age}
@@ -76,10 +90,14 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Gender
+          </label>
           <select
             value={formData.gender}
-            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, gender: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
             disabled={isSubmitting}
@@ -92,11 +110,15 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
           <input
             type="tel"
             value={formData.phoneNumber}
-            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, phoneNumber: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
             disabled={isSubmitting}
@@ -104,21 +126,29 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
           <input
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={isSubmitting}
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Address
+          </label>
           <textarea
             value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, address: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             rows={3}
             required
@@ -135,7 +165,7 @@ export const AddPatientForm = ({ onSubmit, onCancel }) => {
             {isSubmitting && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             )}
-            {isSubmitting ? 'Adding Patient...' : 'Add Patient'}
+            {isSubmitting ? "Adding Patient..." : "Add Patient"}
           </button>
           <button
             type="button"
