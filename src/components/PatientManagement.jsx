@@ -1,7 +1,7 @@
 import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
 import { useState, useEffect, useCallback } from "react";
-import { Edit, Plus, Search, X, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, X, Trash2, Phone, Mail, User, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   getAllPatients,
@@ -54,17 +54,13 @@ export const PatientManagement = ({ onNavigate }) => {
   const handleViewAppointments = async (patient) => {
     setLoading(true);
     try {
-      // Fetch more appointments to ensure we get data if it exists
-      const res = await getPatientAppointments(patient._id, 1, 10); // Increased limit
+      const res = await getPatientAppointments(patient._id, 1, 10);
       
-      // Check multiple possible response structures
       const appointments = res.data || res.appointments || [];
       const hasAppointments = Array.isArray(appointments) && appointments.length > 0;
       
       if (hasAppointments) {
         navigate("/appointments", { state: { selectedPatient: patient } });
-        // OR if using relative navigation within a nested route:
-        // navigate("appointments", { state: { selectedPatient: patient } });
       } else {
         toast.info(`${patient.name} has no appointments.`);
         navigate("/dashboard");
@@ -118,30 +114,31 @@ export const PatientManagement = ({ onNavigate }) => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6">
+      {/* Header Section - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
             Patient Management
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">
             Manage your patients effectively ({totalPatients} total patients)
           </p>
         </div>
         {!showAddForm ? (
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Patient
           </button>
         ) : (
           <button
             onClick={() => setShowAddForm(false)}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+            className="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
             Close
           </button>
         )}
@@ -159,26 +156,26 @@ export const PatientManagement = ({ onNavigate }) => {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - Responsive */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Confirm Delete
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               Are you sure you want to delete this patient? This action cannot be undone and will also delete all associated appointments.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => handleDeletePatient(deleteConfirmId)}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base order-2 sm:order-1"
               >
                 Delete
               </button>
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors text-sm sm:text-base order-1 sm:order-2"
               >
                 Cancel
               </button>
@@ -188,27 +185,28 @@ export const PatientManagement = ({ onNavigate }) => {
       )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="relative flex-1">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        {/* Search and Filter Section - Responsive */}
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search patients by name, email, or phone..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">Show:</label>
+            <div className="flex items-center gap-2 self-end">
+              <label className="text-xs sm:text-sm text-gray-600">Show:</label>
               <select
                 value={itemsPerPage}
                 onChange={(e) =>
                   handleItemsPerPageChange(Number(e.target.value))
                 }
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="border border-gray-300 rounded-md px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -221,11 +219,12 @@ export const PatientManagement = ({ onNavigate }) => {
 
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="text-gray-600">Loading patients...</div>
+            <div className="text-gray-600 text-sm sm:text-base">Loading patients...</div>
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View - Hidden on mobile */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -269,8 +268,7 @@ export const PatientManagement = ({ onNavigate }) => {
                           {patient.email}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex gap-4 flex-wrap">
-                            
+                          <div className="flex gap-2">
                             <button
                               onClick={() => handleEditPatient(patient)}
                               className="text-gray-600 hover:text-gray-800 p-1"
@@ -311,6 +309,84 @@ export const PatientManagement = ({ onNavigate }) => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View - Visible on mobile and tablet */}
+            <div className="lg:hidden">
+              {patients.length > 0 ? (
+                <div className="divide-y divide-gray-200">
+                  {patients.map((patient) => (
+                    <div key={patient._id} className="p-4 sm:p-6">
+                      <div className="flex flex-col gap-3">
+                        {/* Patient Name and Age */}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-lg">
+                              {patient.name}
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                              <span className="flex items-center gap-1">
+                                <User className="w-3 h-3" />
+                                {patient.age} years, {patient.gender}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleEditPatient(patient)}
+                              className="text-gray-600 hover:text-gray-800 p-2 hover:bg-gray-100 rounded-lg"
+                              title="Edit Patient"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            
+                            <button
+                              onClick={() => setDeleteConfirmId(patient._id)}
+                              className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"
+                              title="Delete Patient"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Contact Information */}
+                        <div className="flex flex-col gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-3 h-3" />
+                            <a href={`tel:${patient.phoneNumber}`} className="hover:text-blue-600">
+                              {patient.phoneNumber}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-3 h-3" />
+                            <a href={`mailto:${patient.email}`} className="hover:text-blue-600 truncate">
+                              {patient.email}
+                            </a>
+                          </div>
+                        </div>
+                        
+                        {/* View Appointments Button */}
+                        <button
+                          onClick={() => handleViewAppointments(patient)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm w-full mt-2"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          View Appointments
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 sm:p-8 text-center text-gray-500">
+                  {searchTerm
+                    ? "No patients found matching your search."
+                    : "No patients found."}
+                </div>
+              )}
             </div>
 
             <Pagination
