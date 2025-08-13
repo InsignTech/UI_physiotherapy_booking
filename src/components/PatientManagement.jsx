@@ -1,15 +1,26 @@
+import { useState, useEffect, useCallback } from "react";
+import {
+  Edit,
+  Plus,
+  Search,
+  X,
+  Trash2,
+  Phone,
+  Mail,
+  User,
+  Calendar,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
-import { useState, useEffect, useCallback } from "react";
-import { Edit, Plus, Search, X, Trash2, Phone, Mail, User, Calendar } from "lucide-react";
-import { toast } from "react-toastify";
 import {
   getAllPatients,
   searchPatients,
   getPatientAppointments,
-  deletePatient
+  deletePatient,
+  getDashboard, 
 } from "../services/patientApi";
-import { useNavigate } from "react-router-dom";
 
 export const PatientManagement = ({ onNavigate }) => {
   const [patients, setPatients] = useState([]);
@@ -17,7 +28,7 @@ export const PatientManagement = ({ onNavigate }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalPatients, setTotalPatients] = useState(0);
+  const [totalPatients, setTotalPatients] = useState(0); // This will hold the overall count from the dashboard
   const [loading, setLoading] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingPatient, setEditingPatient] = useState(null);
@@ -25,18 +36,41 @@ export const PatientManagement = ({ onNavigate }) => {
 
   const navigate = useNavigate();
 
+  // 2. This useEffect now fetches the total count, just like the dashboard page
+  useEffect(() => {
+    const fetchTotalCount = async () => {
+      try {
+        const stats = await getDashboard();
+        if (stats && stats.totalPatients !== undefined) {
+          setTotalPatients(stats.totalPatients);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch dashboard stats for patient count",
+          error
+        );
+      }
+    };
+    fetchTotalCount();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // This useEffect still fetches the paginated list of patients
   const fetchPatients = useCallback(async () => {
     setLoading(true);
     try {
       let res;
       if (searchTerm.trim()) {
-        res = await searchPatients(searchTerm.trim(), currentPage, itemsPerPage);
+        res = await searchPatients(
+          searchTerm.trim(),
+          currentPage,
+          itemsPerPage
+        );
       } else {
         res = await getAllPatients(currentPage, itemsPerPage);
       }
       setPatients(res.data || []);
+      // 3. We only set the total pages for the pagination component here
       setTotalPages(res.pagination?.totalPages || 1);
-      setTotalPatients(res.pagination?.totalPatients || 0);
     } catch (error) {
       toast.error("Failed to fetch patients.");
     } finally {
@@ -55,10 +89,10 @@ export const PatientManagement = ({ onNavigate }) => {
     setLoading(true);
     try {
       const res = await getPatientAppointments(patient._id, 1, 10);
-      
       const appointments = res.data || res.appointments || [];
-      const hasAppointments = Array.isArray(appointments) && appointments.length > 0;
-      
+      const hasAppointments =
+        Array.isArray(appointments) && appointments.length > 0;
+
       if (hasAppointments) {
         navigate("/appointments", { state: { selectedPatient: patient } });
       } else {
@@ -84,19 +118,20 @@ export const PatientManagement = ({ onNavigate }) => {
       console.error("Error deleting patient:", error);
     }
   };
-  
+
   const handleAddPatient = () => {
     setShowAddForm(false);
     setEditingPatient(null);
     setCurrentPage(1);
-    fetchPatients(1, itemsPerPage, searchTerm);
+    // This will trigger a refetch of the patient list
+    fetchPatients();
   };
 
   const handleEditPatient = (patient) => {
     setEditingPatient(patient);
     setShowAddForm(true);
   };
-  
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
@@ -115,7 +150,6 @@ export const PatientManagement = ({ onNavigate }) => {
 
   return (
     <div className="p-4 sm:p-6">
-      {/* Header Section - Responsive */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
@@ -156,7 +190,6 @@ export const PatientManagement = ({ onNavigate }) => {
         />
       )}
 
-      {/* Delete Confirmation Modal - Responsive */}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
@@ -164,7 +197,8 @@ export const PatientManagement = ({ onNavigate }) => {
               Confirm Delete
             </h3>
             <p className="text-gray-600 mb-6 text-sm sm:text-base">
-              Are you sure you want to delete this patient? This action cannot be undone and will also delete all associated appointments.
+              Are you sure you want to delete this patient? This action cannot
+              be undone and will also delete all associated appointments.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
@@ -185,7 +219,6 @@ export const PatientManagement = ({ onNavigate }) => {
       )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        {/* Search and Filter Section - Responsive */}
         <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex flex-col gap-4">
             <div className="relative">
@@ -219,11 +252,12 @@ export const PatientManagement = ({ onNavigate }) => {
 
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="text-gray-600 text-sm sm:text-base">Loading patients...</div>
+            <div className="text-gray-600 text-sm sm:text-base">
+              Loading patients...
+            </div>
           </div>
         ) : (
           <>
-            {/* Desktop Table View - Hidden on mobile */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -276,7 +310,6 @@ export const PatientManagement = ({ onNavigate }) => {
                             >
                               <Edit className="w-4 h-4" />
                             </button>
-                            
                             <button
                               onClick={() => setDeleteConfirmId(patient._id)}
                               className="text-red-600 hover:text-red-800 p-1"
@@ -311,14 +344,12 @@ export const PatientManagement = ({ onNavigate }) => {
               </table>
             </div>
 
-            {/* Mobile Card View - Visible on mobile and tablet */}
             <div className="lg:hidden">
               {patients.length > 0 ? (
                 <div className="divide-y divide-gray-200">
                   {patients.map((patient) => (
                     <div key={patient._id} className="p-4 sm:p-6">
                       <div className="flex flex-col gap-3">
-                        {/* Patient Name and Age */}
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-semibold text-gray-900 text-lg">
@@ -331,8 +362,6 @@ export const PatientManagement = ({ onNavigate }) => {
                               </span>
                             </div>
                           </div>
-                          
-                          {/* Action buttons */}
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleEditPatient(patient)}
@@ -341,7 +370,6 @@ export const PatientManagement = ({ onNavigate }) => {
                             >
                               <Edit className="w-4 h-4" />
                             </button>
-                            
                             <button
                               onClick={() => setDeleteConfirmId(patient._id)}
                               className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"
@@ -351,24 +379,26 @@ export const PatientManagement = ({ onNavigate }) => {
                             </button>
                           </div>
                         </div>
-                        
-                        {/* Contact Information */}
                         <div className="flex flex-col gap-2 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <Phone className="w-3 h-3" />
-                            <a href={`tel:${patient.phoneNumber}`} className="hover:text-blue-600">
+                            <a
+                              href={`tel:${patient.phoneNumber}`}
+                              className="hover:text-blue-600"
+                            >
                               {patient.phoneNumber}
                             </a>
                           </div>
                           <div className="flex items-center gap-2">
                             <Mail className="w-3 h-3" />
-                            <a href={`mailto:${patient.email}`} className="hover:text-blue-600 truncate">
+                            <a
+                              href={`mailto:${patient.email}`}
+                              className="hover:text-blue-600 truncate"
+                            >
                               {patient.email}
                             </a>
                           </div>
                         </div>
-                        
-                        {/* View Appointments Button */}
                         <button
                           onClick={() => handleViewAppointments(patient)}
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm w-full mt-2"
@@ -385,6 +415,7 @@ export const PatientManagement = ({ onNavigate }) => {
                   {searchTerm
                     ? "No patients found matching your search."
                     : "No patients found."}
+                  {" "}
                 </div>
               )}
             </div>
