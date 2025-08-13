@@ -1,15 +1,17 @@
 import { AddPatientForm } from "./AddPatient";
 import { Pagination } from "./Pagination";
-import { useState, useEffect } from "react";
-import { Edit, Eye, Plus, Search, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Edit, Plus, Search, X, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
 import {
   getAllPatients,
   searchPatients,
-  updatePatient,
+  getPatientAppointments,
+  deletePatient
 } from "../services/patientApi";
 import { useNavigate } from "react-router-dom";
 
-export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
+export const PatientManagement = ({ onNavigate }) => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,56 +19,88 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalPatients, setTotalPatients] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const navigate = useNavigate();
 
-
-   const fetchPatients = async (page = currentPage, limit = itemsPerPage, search = searchTerm) => {
+  const fetchPatients = useCallback(async () => {
     setLoading(true);
     try {
       let res;
-      if (search.trim()) {
-        res = await searchPatients(search.trim(), page, limit);
+      if (searchTerm.trim()) {
+        res = await searchPatients(searchTerm.trim(), currentPage, itemsPerPage);
       } else {
-        res = await getAllPatients(page, limit);
+        res = await getAllPatients(currentPage, itemsPerPage);
       }
       setPatients(res.data || []);
       setTotalPages(res.pagination?.totalPages || 1);
       setTotalPatients(res.pagination?.totalPatients || 0);
     } catch (error) {
-      setPatients([]);
-      setTotalPages(1);
-      setTotalPatients(0);
+      toast.error("Failed to fetch patients.");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, itemsPerPage, searchTerm]);
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchPatients();
+    }, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [fetchPatients]);
+
+  const handleViewAppointments = async (patient) => {
+    setLoading(true);
+    try {
+      // Fetch more appointments to ensure we get data if it exists
+      const res = await getPatientAppointments(patient._id, 1, 10); // Increased limit
+      
+      // Check multiple possible response structures
+      const appointments = res.data || res.appointments || [];
+      const hasAppointments = Array.isArray(appointments) && appointments.length > 0;
+      
+      if (hasAppointments) {
+        navigate("/appointments", { state: { selectedPatient: patient } });
+        // OR if using relative navigation within a nested route:
+        // navigate("appointments", { state: { selectedPatient: patient } });
+      } else {
+        toast.info(`${patient.name} has no appointments.`);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error checking appointments:", error);
+      toast.error("Could not check appointments.");
     } finally {
       setLoading(false);
     }
   };
 
-  
-  // Fetch patients from API
-  useEffect(() => {
-    // Debounce search to avoid too many API calls
-    const debounceTimer = setTimeout(() => {
+  const handleDeletePatient = async (patientId) => {
+    try {
+      await deletePatient(patientId);
+      toast.success("Patient deleted successfully");
+      setDeleteConfirmId(null);
       fetchPatients();
-    }, searchTerm ? 500 : 0);
-
-    return () => clearTimeout(debounceTimer);
-    // eslint-disable-next-line
-  }, [currentPage, itemsPerPage, searchTerm]);
-
-  const handleAddPatient = (patientData) => {
+    } catch (error) {
+      toast.error("Failed to delete patient");
+      console.error("Error deleting patient:", error);
+    }
+  };
+  
+  const handleAddPatient = () => {
     setShowAddForm(false);
     setEditingPatient(null);
     setCurrentPage(1);
-    fetchPatients(1, itemsPerPage, searchTerm); // Refresh first page
+    fetchPatients(1, itemsPerPage, searchTerm);
   };
 
   const handleEditPatient = (patient) => {
     setEditingPatient(patient);
     setShowAddForm(true);
   };
+  
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
@@ -75,12 +109,12 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
 
   const handleItemsPerPageChange = (newLimit) => {
     setItemsPerPage(newLimit);
-    setCurrentPage(1); // Reset to first page when changing limit
+    setCurrentPage(1);
   };
 
   const handleSearch = (value) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
   return (
@@ -106,7 +140,6 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
           <button
             onClick={() => setShowAddForm(false)}
             className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-            aria-label="Close"
           >
             <X className="w-5 h-5" />
             Close
@@ -126,11 +159,39 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
         />
       )}
 
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Confirm Delete
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this patient? This action cannot be undone and will also delete all associated appointments.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleDeletePatient(deleteConfirmId)}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="relative flex-1">
-              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
@@ -140,7 +201,6 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
               />
             </div>
 
-            {/* Items per page selector */}
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">Show:</label>
               <select
@@ -209,24 +269,29 @@ export const PatientManagement = ({ onNavigate, onSelectPatient }) => {
                           {patient.email}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                onSelectPatient(patient);
-                                navigate("appointments");
-                              }}
-                              className="text-blue-600 hover:text-blue-800 p-1"
-                              title="View Appointments"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
+                          <div className="flex gap-4 flex-wrap">
+                            
                             <button
                               onClick={() => handleEditPatient(patient)}
                               className="text-gray-600 hover:text-gray-800 p-1"
                               title="Edit Patient"
                             >
-                              <Edit className="w-4 h-4" />{" "}
-                              {/* Replace with Edit icon if you have one */}
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            
+                            <button
+                              onClick={() => setDeleteConfirmId(patient._id)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                              title="Delete Patient"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleViewAppointments(patient)}
+                              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                              title="View Appointments"
+                            >
+                              View
                             </button>
                           </div>
                         </td>
