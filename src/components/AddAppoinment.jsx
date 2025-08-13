@@ -1,13 +1,8 @@
 import { useState, useEffect } from "react";
 import { searchPatients } from "../services/patientApi"; // make sure path is correct
 
-export const AddAppointmentForm = ({ 
-  onSubmit, 
-  onCancel, 
-  selectedPatient, 
-  initialData = null, 
-  isEdit = false 
-}) => {
+
+export const AddAppointmentForm = ({ onSubmit, onCancel, selectedPatient }) => {
   const [formData, setFormData] = useState({
     patientId: selectedPatient?._id || "",
     totalAmount: "",
@@ -21,33 +16,10 @@ export const AddAppointmentForm = ({
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // NEW: Effect to populate form data when editing
+  // Search patients when typing (only if no selectedPatient)
   useEffect(() => {
-    if (initialData && isEdit) {
-      const appointmentDate = new Date(initialData.appointmentDate);
-      const formattedDate = appointmentDate.toISOString().split("T")[0];
-      
-      setFormData({
-        patientId: initialData.patientId?._id || initialData.patientId || "",
-        totalAmount: initialData.totalAmount?.toString() || "",
-        paidAmount: initialData.paidAmount?.toString() || "",
-        appointmentDate: formattedDate,
-        notes: initialData.notes || "",
-      });
-
-      // Set the search term to the patient's name for editing
-      if (initialData.patientId?.name) {
-        setSearchTerm(initialData.patientId.name);
-      } else if (selectedPatient?.name) {
-        setSearchTerm(selectedPatient.name);
-      }
-    }
-  }, [initialData, isEdit, selectedPatient]);
-
-  // Search patients when typing (only if no selectedPatient and not editing)
-  useEffect(() => {
-    // Don't search if a patient is already selected or we're editing
-    if (selectedPatient || isEdit) {
+    // Don't search if a patient is already selected
+    if (selectedPatient) {
       setSearchResults([]);
       setShowDropdown(false);
       return;
@@ -72,20 +44,13 @@ export const AddAppointmentForm = ({
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, selectedPatient, isEdit]);
+  }, [searchTerm, selectedPatient]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     // If selectedPatient exists, use it; otherwise find from search results
-    let patient = selectedPatient;
-    
-    // For editing, we might have patient data in initialData
-    if (isEdit && initialData?.patientId) {
-      patient = initialData.patientId;
-    } else if (!selectedPatient) {
-      patient = searchResults.find((p) => p._id === formData.patientId);
-    }
+    const patient = selectedPatient || searchResults.find((p) => p._id === formData.patientId);
     
     if (!patient) {
       alert("Please select a patient");
@@ -95,7 +60,7 @@ export const AddAppointmentForm = ({
     onSubmit({
       ...formData,
       patientName: patient.name,
-      patientId: patient._id || patient.id,
+      patientId: patient._id,
       totalAmount: parseInt(formData.totalAmount),
       paidAmount: parseInt(formData.paidAmount),
       appointmentDate: new Date(formData.appointmentDate),
@@ -112,21 +77,18 @@ export const AddAppointmentForm = ({
     const value = e.target.value;
     setSearchTerm(value);
     
-    // Reset patientId if user is typing (and not selectedPatient and not editing)
-    if (!selectedPatient && !isEdit) {
+    // Reset patientId if user is typing (and not selectedPatient)
+    if (!selectedPatient) {
       setFormData({ ...formData, patientId: "" });
     }
   };
 
-  // Determine if patient field should be readonly
-  const isPatientReadonly = selectedPatient || isEdit;
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        {isEdit ? "Edit Appointment" : "Add New Appointment"}
+        Add New Appointment
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Patient Search Input */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -136,16 +98,16 @@ export const AddAppointmentForm = ({
             type="text"
             value={searchTerm}
             onChange={handleSearchTermChange}
-            placeholder={isPatientReadonly ? searchTerm : "Type to search..."}
+            placeholder={selectedPatient ? selectedPatient.name : "Type to search..."}
             className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              isPatientReadonly ? 'bg-gray-100 cursor-not-allowed' : ''
+              selectedPatient ? 'bg-gray-100 cursor-not-allowed' : ''
             }`}
             required
-            readOnly={isPatientReadonly}
+            readOnly={selectedPatient}
           />
           
-          {/* Show dropdown only if no selectedPatient, not editing, and there are search results */}
-          {!selectedPatient && !isEdit && showDropdown && searchResults.length > 0 && (
+          {/* Show dropdown only if no selectedPatient and there are search results */}
+          {!selectedPatient && showDropdown && searchResults.length > 0 && (
             <ul className="absolute z-10 bg-white border border-gray-300 rounded-lg w-full mt-1 max-h-48 overflow-y-auto shadow-lg">
               {searchResults.map((patient) => (
                 <li
@@ -159,10 +121,10 @@ export const AddAppointmentForm = ({
             </ul>
           )}
           
-          {/* Show message if patient is readonly */}
-          {isPatientReadonly && (
+          {/* Show message if selectedPatient exists */}
+          {selectedPatient && (
             <p className="text-sm text-gray-500 mt-1">
-              {isEdit ? "Patient cannot be changed while editing" : `Patient selected: ${searchTerm}`}
+              Patient selected: {selectedPatient.name}
             </p>
           )}
         </div>
@@ -236,19 +198,20 @@ export const AddAppointmentForm = ({
         {/* Buttons */}
         <div className="md:col-span-2 flex gap-4">
           <button
-            onClick={handleSubmit}
+            type="submit"
             className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
           >
-            {isEdit ? "Update Appointment" : "Add Appointment"}
+            Add Appointment
           </button>
           <button
+            type="button"
             onClick={onCancel}
             className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
           >
             Cancel
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

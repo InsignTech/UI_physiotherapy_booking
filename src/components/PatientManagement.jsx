@@ -194,7 +194,7 @@ export const PatientManagement = ({ onNavigate }) => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search patients by name, email, or phone..."
+                placeholder="Search patients by name, or phone..."
                 className="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
             </div>

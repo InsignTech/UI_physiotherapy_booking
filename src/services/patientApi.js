@@ -25,6 +25,7 @@ export const getAllPatients = async (page = 1, limit = 10) => {
 
 export const searchPatients = async (query) => {
   try {
+    console.log(query)
     const response = await PATIENT_INSTANCE.get("/search", {
       params: {query },
     });
