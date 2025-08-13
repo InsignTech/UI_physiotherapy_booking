@@ -59,39 +59,50 @@ export const AppointmentManagement = ({ onNavigate }) => {
     }, [fetchAppointments]);
 
     // Handler for filter changes
-    const handleFilterChange = (filter) => {
-        setActiveFilter(filter);
-        setCurrentPage(1); // Reset to first page on filter change
-        
-        const today = new Date();
-        let startDate, endDate;
+   const toLocalDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-        switch (filter) {
-            case 'today':
-                startDate = toApiDateString(today);
-                endDate = toApiDateString(today);
-                break;
-            case 'this_week':
-                const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
-                const lastDayOfWeek = new Date(firstDayOfWeek);
-                lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
-                startDate = toApiDateString(firstDayOfWeek);
-                endDate = toApiDateString(lastDayOfWeek);
-                break;
-            case 'this_month':
-                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                startDate = toApiDateString(firstDayOfMonth);
-                endDate = toApiDateString(lastDayOfMonth);
-                break;
-            case 'all':
-            default:
-                startDate = '';
-                endDate = '';
-                break;
-        }
-        setDateRange({ start: startDate, end: endDate });
-    };
+const handleFilterChange = (filter) => {
+  setActiveFilter(filter);
+  setCurrentPage(1);
+
+  const now = new Date();
+  let startDate = '';
+  let endDate = '';
+
+  switch (filter) {
+    case 'today':
+      startDate = toLocalDateString(now);
+      endDate = ''; // no end date for today
+      break;
+    case 'this_week': {
+      const firstDayOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+      const lastDayOfWeek = new Date(firstDayOfWeek.getFullYear(), firstDayOfWeek.getMonth(), firstDayOfWeek.getDate() + 6);
+      startDate = toLocalDateString(firstDayOfWeek);
+      endDate = toLocalDateString(lastDayOfWeek);
+      break;
+    }
+    case 'this_month': {
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      startDate = toLocalDateString(firstDayOfMonth);
+      endDate = toLocalDateString(lastDayOfMonth);
+      break;
+    }
+    case 'all':
+    default:
+      startDate = '';
+      endDate = '';
+      break;
+  }
+
+  setDateRange({ start: startDate, end: endDate });
+};
+
 
     const handleAddAppointment = async (appointmentData) => {
         try {

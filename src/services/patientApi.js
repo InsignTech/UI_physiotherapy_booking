@@ -55,11 +55,13 @@ export const deletePatient = async (id) => {
 };
 
 // Get appointments for a patient (with pagination)
-export const getPatientAppointments = async (id, page, limit, date) => {
+export const getPatientAppointments = async (id, page, limit, startDate,endDate) => {
   try {
     const params = { page, limit };
     if (id) params.id = id;
-    if (date) params.date = date;
+    if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+
     const response = await PATIENT_INSTANCE.get("/getAllAppointmnets", { params });
     console.log("appoin",response.data)
     return response.data;
