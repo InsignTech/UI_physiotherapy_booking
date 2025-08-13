@@ -63,7 +63,7 @@ export const PatientManagement = ({ onNavigate }) => {
         navigate("/appointments", { state: { selectedPatient: patient } });
       } else {
         toast.info(`${patient.name} has no appointments.`);
-        navigate("/dashboard");
+        navigate("/appointments");
       }
     } catch (error) {
       console.error("Error checking appointments:", error);

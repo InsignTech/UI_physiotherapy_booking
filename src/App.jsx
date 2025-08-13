@@ -10,6 +10,7 @@ import { Dashboard } from "./components/Dashboard";
 import { PatientManagement } from "./components/PatientManagement";
 import { AppointmentManagement } from "./components/AppoinmentManagement";
 import { LoginScreen } from "./components/LoginScreen";
+import {AppointmentCalendarMonitor} from './components/AppointmentCalendarMonitor'
 
 const App = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -44,6 +45,7 @@ const App = () => {
             }
           />
           <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="/calendar" element={<AppointmentCalendarMonitor />} />
         </Routes>
       </div>
     </Router>

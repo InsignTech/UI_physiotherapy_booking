@@ -1,4 +1,4 @@
-import { Calendar, Users, Menu, X } from "lucide-react";
+import { Calendar, Users, Menu, X, PlusSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -17,9 +17,10 @@ export const Navigation = ({ currentView }) => {
     {
       id: "appointments",
       label: "Appointments",
-      icon: Calendar,
+      icon: PlusSquare,
       path: "/appointments",
     },
+     { id: "calender", label: "calender", icon: Calendar, path: "/calendar" },
   ];
 
   const handleNavClick = (path) => {
