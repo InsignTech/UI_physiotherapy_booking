@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { searchPatients } from "../services/patientApi"; // make sure path is correct
 
-export const AddAppointmentForm = ({ 
-  onSubmit, 
-  onCancel, 
-  selectedPatient, 
-  initialData = null, 
-  isEdit = false 
+export const AddAppointmentForm = ({
+  onSubmit,
+  onCancel,
+  selectedPatient,
+  initialData = null,
+  isEdit = false,
 }) => {
   const [formData, setFormData] = useState({
     patientId: selectedPatient?._id || "",
@@ -26,7 +26,7 @@ export const AddAppointmentForm = ({
     if (isEdit && initialData) {
       const appointmentDate = new Date(initialData.appointmentDate);
       const formattedDate = appointmentDate.toISOString().split("T")[0];
-      
+
       setFormData({
         patientId: initialData.patientId?._id || initialData.patientId,
         totalAmount: initialData.totalAmount.toString(),
@@ -74,7 +74,7 @@ export const AddAppointmentForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // If editing, use the existing patient info
     if (isEdit && initialData) {
       onSubmit({
@@ -89,8 +89,10 @@ export const AddAppointmentForm = ({
     }
 
     // If selectedPatient exists, use it; otherwise find from search results
-    const patient = selectedPatient || searchResults.find((p) => p._id === formData.patientId);
-    
+    const patient =
+      selectedPatient ||
+      searchResults.find((p) => p._id === formData.patientId);
+
     if (!patient) {
       alert("Please select a patient");
       return;
@@ -115,7 +117,7 @@ export const AddAppointmentForm = ({
   const handleSearchTermChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     // Reset patientId if user is typing (and not selectedPatient and not editing)
     if (!selectedPatient && !isEdit) {
       setFormData({ ...formData, patientId: "" });
@@ -130,7 +132,10 @@ export const AddAppointmentForm = ({
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
         {isEdit ? "Edit Appointment" : "Add New Appointment"}
       </h2>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
         {/* Patient Search Input */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -141,34 +146,37 @@ export const AddAppointmentForm = ({
             value={searchTerm}
             onChange={handleSearchTermChange}
             placeholder={
-              selectedPatient 
-                ? selectedPatient.name 
-                : isEdit 
-                  ? searchTerm 
-                  : "Type to search..."
+              selectedPatient
+                ? selectedPatient.name
+                : isEdit
+                ? searchTerm
+                : "Type to search..."
             }
             className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              isPatientReadonly ? 'bg-gray-100 cursor-not-allowed' : ''
+              isPatientReadonly ? "bg-gray-100 cursor-not-allowed" : ""
             }`}
             required
             readOnly={isPatientReadonly}
           />
-          
+
           {/* Show dropdown only if no selectedPatient, not editing, and there are search results */}
-          {!selectedPatient && !isEdit && showDropdown && searchResults.length > 0 && (
-            <ul className="absolute z-10 bg-white border border-gray-300 rounded-lg w-full mt-1 max-h-48 overflow-y-auto shadow-lg">
-              {searchResults.map((patient) => (
-                <li
-                  key={patient._id}
-                  onClick={() => handleSelectPatient(patient)}
-                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="font-medium">{patient.name}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-          
+          {!selectedPatient &&
+            !isEdit &&
+            showDropdown &&
+            searchResults.length > 0 && (
+              <ul className="absolute z-10 bg-white border border-gray-300 rounded-lg w-full mt-1 max-h-48 overflow-y-auto shadow-lg">
+                {searchResults.map((patient) => (
+                  <li
+                    key={patient._id}
+                    onClick={() => handleSelectPatient(patient)}
+                    className="px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium">{patient.name}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
           {/* Show appropriate message */}
           {selectedPatient && (
             <p className="text-sm text-gray-500 mt-1">
@@ -206,12 +214,22 @@ export const AddAppointmentForm = ({
           <input
             type="number"
             value={formData.totalAmount}
-            onChange={(e) =>
-              setFormData({ ...formData, totalAmount: e.target.value })
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setFormData((prev) => ({
+                ...prev,
+                totalAmount: value,
+                // Only auto-set paidAmount if user hasn't changed it manually
+                paidAmount:
+                  prev.paidAmount === "" || prev.paidAmount === prev.totalAmount
+                    ? value
+                    : prev.paidAmount,
+              }));
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
             min="0"
+            max="1000000"
           />
         </div>
 
@@ -229,6 +247,7 @@ export const AddAppointmentForm = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
             min="0"
+            max={formData.totalAmount || 0}
           />
         </div>
 

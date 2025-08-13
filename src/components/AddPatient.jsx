@@ -17,6 +17,7 @@ export const AddPatientForm = ({
     email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   useEffect(() => {
     if (initialData) {
@@ -39,10 +40,46 @@ export const AddPatientForm = ({
         email: "",
       });
     }
+    // Clear phone error when form data changes
+    setPhoneError("");
   }, [initialData]);
+
+  const validatePhoneNumber = (phone) => {
+    // Remove any non-digit characters for validation
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    if (cleanPhone.length === 0) {
+      return "Phone number is required";
+    }
+    if (cleanPhone.length !== 10) {
+      return "Phone number must be exactly 10 digits";
+    }
+    return "";
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Only allow digits and limit to 10 characters
+    const cleanValue = value.replace(/\D/g, '').slice(0, 10);
+    
+    setFormData({ ...formData, phoneNumber: cleanValue });
+    
+    // Validate phone number
+    const error = validatePhoneNumber(cleanValue);
+    setPhoneError(error);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Final phone number validation before submission
+    const phoneValidationError = validatePhoneNumber(formData.phoneNumber);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -72,6 +109,7 @@ export const AddPatientForm = ({
           phoneNumber: "",
           email: "",
         });
+        setPhoneError("");
       }
     } catch (error) {
       toast.error(
@@ -151,13 +189,21 @@ export const AddPatientForm = ({
           <input
             type="tel"
             value={formData.phoneNumber}
-            onChange={(e) =>
-              setFormData({ ...formData, phoneNumber: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onChange={handlePhoneChange}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              phoneError ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Enter 10-digit phone number"
+            maxLength={10}
             required
             disabled={isSubmitting}
           />
+          {phoneError && (
+            <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+          )}
+          <p className="text-gray-500 text-xs mt-1">
+            {formData.phoneNumber.length}/10 digits
+          </p>
         </div>
 
         <div className="md:col-span-2">
@@ -194,7 +240,7 @@ export const AddPatientForm = ({
         <div className="md:col-span-2 flex gap-4">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || phoneError}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && (

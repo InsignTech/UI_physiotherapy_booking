@@ -70,15 +70,16 @@ export const AppointmentCalendarMonitor = () => {
     };
 
     const handlePatientClick = (patient, appointment) => {
+        console.log("patients",patient)
         setSelectedPatient({ 
             ...patient, 
             appointment,
-            phone: patient.phone || 'Not provided',
+            phone: patient.phoneNumber || 'Not provided',
             email: patient.email || 'Not provided', 
             address: patient.address || 'Not provided',
             age: patient.age || 'Not specified',
             gender: patient.gender || 'Not specified',
-            medicalHistory: patient.medicalHistory || 'No medical history available'
+            medicalHistory: patient.notes || 'No medical history available'
         });
         setShowModal(true);
     };

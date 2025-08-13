@@ -1,10 +1,17 @@
 import { Calendar, Users, Menu, X, PlusSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
 export const Navigation = ({ currentView }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+      }
+    }, [navigate]);
 
   const onLogout = () => {
     localStorage.clear();

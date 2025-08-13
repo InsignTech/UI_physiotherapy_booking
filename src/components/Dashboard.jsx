@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Users, Eye, Filter } from "lucide-react";
+import { Calendar, Users, Eye, Filter,PlusSquare,LogOut  } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../services/patientApi"; // Make sure this import is correct
 
@@ -7,6 +7,7 @@ export const Dashboard = ({ appointments = [] }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -14,11 +15,21 @@ export const Dashboard = ({ appointments = [] }) => {
       navigate("/login");
     }
   }, [navigate]);
+  const onLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    setIsMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
         const res = await getDashboard();
+        console.log("res.......", res);
         setStats(res);
       } catch (error) {
         setStats(null);
@@ -34,10 +45,11 @@ export const Dashboard = ({ appointments = [] }) => {
   }
 
   if (!stats) {
-    return <div className="p-6 text-red-500">Failed to load dashboard stats.</div>;
+    return (
+      <div className="p-6 text-red-500">Failed to load dashboard stats.</div>
+    );
   }
 
-  // Today's appointments list (for the right panel)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayAppointments = appointments.filter((apt) => {
@@ -128,7 +140,7 @@ export const Dashboard = ({ appointments = [] }) => {
               onClick={() => navigate("/appointments")}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
             >
-              <Calendar className="w-5 h-5" />
+             <PlusSquare className="w-5 h-5" />
               View Appointments
             </button>
           </div>
@@ -136,32 +148,23 @@ export const Dashboard = ({ appointments = [] }) => {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Today's Appointments
+            Quick Actions
           </h2>
           <div className="space-y-3">
-            {todayAppointments.slice(0, 5).map((appointment) => (
-              <div
-                key={appointment._id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-800">
-                    {appointment.patientName}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    ₹{appointment.totalAmount}
-                  </p>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(appointment.appointmentDate).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
-            {todayAppointments.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                No appointments today
-              </p>
-            )}
+            <button
+              onClick={() => navigate("/calendar")}
+              className="w-full bg-purple-500 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+            >
+               <Calendar className="w-5 h-5" />
+              Calender
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+            >
+             <LogOut className="w-5 h-5" />
+              logout
+            </button>
           </div>
         </div>
       </div>
