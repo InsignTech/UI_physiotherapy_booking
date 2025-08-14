@@ -19,7 +19,7 @@ import {
   searchPatients,
   getPatientAppointments,
   deletePatient,
-  getDashboard, 
+  getDashboard,
 } from "../services/patientApi";
 
 export const PatientManagement = ({ onNavigate }) => {
@@ -68,7 +68,40 @@ export const PatientManagement = ({ onNavigate }) => {
       } else {
         res = await getAllPatients(currentPage, itemsPerPage);
       }
-      setPatients(res.data || []);
+      let patientsData = res.data || [];
+
+     const patientsWithAppointments = await Promise.all(
+  patientsData.map(async (patient) => {
+    try {
+      const appRes = await getPatientAppointments(patient._id, 1, 1);
+      const appointments = appRes.data || [];
+      const pagination = appRes.pagination || {};
+
+      let pendingBalance = 0;
+      let totalAppointments = 0;
+
+      if (appointments.length > 0) {
+        // Use previousBalance or patientPendingBalance depending on requirement
+        pendingBalance = appointments[0].previousBalance || 0;
+      }
+
+      // Get total records from pagination object
+      totalAppointments = pagination.totalRecords || 0;
+
+      return {
+        ...patient,
+        pendingBalance,
+        totalAppointments,
+      };
+    } catch (err) {
+      console.error(`Failed fetching appointments for ${patient._id}`, err);
+      return { ...patient, pendingBalance: 0, totalAppointments: 0 };
+    }
+  })
+);
+
+setPatients(patientsWithAppointments);
+
       // 3. We only set the total pages for the pagination component here
       setTotalPages(res.pagination?.totalPages || 1);
     } catch (error) {
@@ -90,6 +123,7 @@ export const PatientManagement = ({ onNavigate }) => {
     try {
       const res = await getPatientAppointments(patient._id, 1, 10);
       const appointments = res.data || res.appointments || [];
+      console.log("dfsdfsdfsd", res.data);
       const hasAppointments =
         Array.isArray(appointments) && appointments.length > 0;
 
@@ -278,6 +312,12 @@ export const PatientManagement = ({ onNavigate }) => {
                       Email
                     </th>
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
+                      Pending Balance
+                    </th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
+                      Total Appointments
+                    </th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Actions
                     </th>
                   </tr>
@@ -300,6 +340,12 @@ export const PatientManagement = ({ onNavigate }) => {
                         </td>
                         <td className="px-6 py-4 text-gray-600">
                           {patient.email}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">
+                          ₹{patient.pendingBalance}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">
+                          {patient.totalAppointments}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
@@ -414,8 +460,7 @@ export const PatientManagement = ({ onNavigate }) => {
                 <div className="p-6 sm:p-8 text-center text-gray-500">
                   {searchTerm
                     ? "No patients found matching your search."
-                    : "No patients found."}
-                  {" "}
+                    : "No patients found."}{" "}
                 </div>
               )}
             </div>

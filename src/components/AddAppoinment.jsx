@@ -111,27 +111,30 @@ export const AddAppointmentForm = ({
   };
 
   const handleSelectPatient = async (patient) => {
-  setFormData({
-    ...formData,
-    patientId: patient._id,
-    pendingBalance: patient.pendingBalance  || 0,
-  });
-  setSearchTerm(patient.name);
-  setShowDropdown(false);
-  
-  // Optional: Fetch complete patient details if balance is not included in search
-  if (!patient.pendingBalance && !patient.patientPendingBalance) {
-    try {
-      const fullPatientData = await getPatientById(patient._id);
-      setFormData(prev => ({
-        ...prev,
-        pendingBalance: fullPatientData.pendingBalance || fullPatientData.patientPendingBalance || 0
-      }));
-    } catch (error) {
-      console.error('Error fetching patient details:', error);
+    setFormData({
+      ...formData,
+      patientId: patient._id,
+      pendingBalance: patient.pendingBalance || 0,
+    });
+    setSearchTerm(patient.name);
+    setShowDropdown(false);
+
+    // Optional: Fetch complete patient details if balance is not included in search
+    if (!patient.pendingBalance && !patient.patientPendingBalance) {
+      try {
+        const fullPatientData = await getPatientById(patient._id);
+        setFormData((prev) => ({
+          ...prev,
+          pendingBalance:
+            fullPatientData.pendingBalance ||
+            fullPatientData.patientPendingBalance ||
+            0,
+        }));
+      } catch (error) {
+        console.error("Error fetching patient details:", error);
+      }
     }
-  }
-};
+  };
 
   const handleSearchTermChange = (e) => {
     const value = e.target.value;
@@ -234,7 +237,10 @@ export const AddAppointmentForm = ({
             type="number"
             value={formData.totalAmount}
             onChange={(e) => {
-              const value = e.target.value;
+              let value = e.target.value;
+              if (value < 0) value = 0;
+              if (value > 500000) value = 500000;
+
               setFormData((prev) => ({
                 ...prev,
                 totalAmount: value,
@@ -248,41 +254,62 @@ export const AddAppointmentForm = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
             min="0"
-            max="1000000"
+            max="500000"
           />
         </div>
 
-        {/* Paid Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Paid Amount
           </label>
           <input
-            type="number"
+            type="text"
             value={formData.paidAmount}
-            onChange={(e) =>
-              setFormData({ ...formData, paidAmount: e.target.value })
-            }
+            onChange={(e) => {
+              let raw = e.target.value;
+
+              // Allow only numbers and optional decimal
+              if (!/^\d*\.?\d*$/.test(raw)) return;
+
+              // Remove leading zeros unless "0" or "0.something"
+              if (
+                raw.length > 1 &&
+                raw.startsWith("0") &&
+                !raw.startsWith("0.")
+              ) {
+                raw = raw.replace(/^0+/, "");
+              }
+
+              // Convert to number for comparison
+              const valueNum = parseFloat(raw) || 0;
+              const maxAllowed =
+                (formData.previousBalance || 0) + (formData.totalAmount || 0);
+
+              if (valueNum <= maxAllowed) {
+                setFormData({ ...formData, paidAmount: raw });
+              } else {
+                toast.warning(`Paid amount cannot exceed ₹${maxAllowed}`);
+              }
+            }}
+            inputMode="decimal" // mobile numeric keyboard
+            placeholder="0"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
-            min="0"
-            max={formData.totalAmount || 0}
           />
         </div>
-        {/* Pending Balance */}
-        {/* Pending Balance */}
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Pending Balance
-  </label>
-  <input
-    type="number"
-    value={formData.pendingBalance}
-    readOnly
-    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-  />
-</div>
 
+        {/* Pending Balance */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Pending Balance
+          </label>
+          <input
+            type="number"
+            value={formData.pendingBalance}
+            readOnly
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+          />
+        </div>
 
         {/* Notes */}
         <div className="md:col-span-1">

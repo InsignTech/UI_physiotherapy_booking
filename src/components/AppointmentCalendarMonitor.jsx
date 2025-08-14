@@ -229,7 +229,6 @@ export const AppointmentCalendarMonitor = () => {
                     {appointment.patientId?.name || "Unknown Patient"}
                   </div>
                   <div className="flex items-center gap-1 mt-1 text-xs">
-                    <DollarSign className="w-3 h-3" />
                     <span className="truncate">₹{appointment.totalAmount}</span>
                     <span
                       className={`ml-auto px-1.5 py-0.5 rounded text-xs font-semibold ${paymentStatus.color}`}
