@@ -29,7 +29,6 @@ export const searchPatients = async (query) => {
     const response = await PATIENT_INSTANCE.get("/search", {
       params: {query },
     });
-    console.log("res",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -63,7 +62,6 @@ export const getPatientAppointments = async (id, page, limit, startDate,endDate)
         if (endDate) params.endDate = endDate;
 
     const response = await PATIENT_INSTANCE.get("/getAllAppointmnets", { params });
-    console.log("appoin",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -73,7 +71,6 @@ export const getPatientAppointments = async (id, page, limit, startDate,endDate)
 export const getDashboard = async () => {
   try {
     const response = await PATIENT_INSTANCE.get(`/dashboard`);
-    console.log("dsfsdfsdfsd",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

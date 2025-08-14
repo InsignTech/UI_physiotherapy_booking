@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const LoginScreen = ({ onLogin }) => {
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -14,16 +14,16 @@ export const LoginScreen = ({ onLogin }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/dashboard", { replace: true });
+      navigate("/patient", { replace: true });
     }
   }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await login({ email, password });
+      const res = await login({ userName, password });
       localStorage.setItem("token", res.data);
-      navigate("/dashboard");
+      navigate("/patient");
     } catch (error) {
       toast.error(error.response?.data?.msg || "invalid username or password");
     }
@@ -43,14 +43,14 @@ export const LoginScreen = ({ onLogin }) => {
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              userName
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="userName"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="doctor@clinic.com"
+              placeholder="userName"
               required
             />
           </div>

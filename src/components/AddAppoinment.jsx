@@ -14,6 +14,7 @@ export const AddAppointmentForm = ({
     paidAmount: "",
     appointmentDate: new Date().toISOString().split("T")[0],
     notes: "",
+    pendingBalance: 0,
   });
 
   // Initialize searchTerm with selectedPatient name if available
@@ -33,6 +34,7 @@ export const AddAppointmentForm = ({
         paidAmount: initialData.paidAmount.toString(),
         appointmentDate: formattedDate,
         notes: initialData.notes || "",
+        pendingBalance: initialData.patientPendingBalance || 0,
       });
 
       // Set the patient name for display
@@ -108,11 +110,28 @@ export const AddAppointmentForm = ({
     });
   };
 
-  const handleSelectPatient = (patient) => {
-    setFormData({ ...formData, patientId: patient._id });
-    setSearchTerm(patient.name);
-    setShowDropdown(false);
-  };
+  const handleSelectPatient = async (patient) => {
+  setFormData({
+    ...formData,
+    patientId: patient._id,
+    pendingBalance: patient.pendingBalance  || 0,
+  });
+  setSearchTerm(patient.name);
+  setShowDropdown(false);
+  
+  // Optional: Fetch complete patient details if balance is not included in search
+  if (!patient.pendingBalance && !patient.patientPendingBalance) {
+    try {
+      const fullPatientData = await getPatientById(patient._id);
+      setFormData(prev => ({
+        ...prev,
+        pendingBalance: fullPatientData.pendingBalance || fullPatientData.patientPendingBalance || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching patient details:', error);
+    }
+  }
+};
 
   const handleSearchTermChange = (e) => {
     const value = e.target.value;
@@ -250,9 +269,23 @@ export const AddAppointmentForm = ({
             max={formData.totalAmount || 0}
           />
         </div>
+        {/* Pending Balance */}
+        {/* Pending Balance */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Pending Balance
+  </label>
+  <input
+    type="number"
+    value={formData.pendingBalance}
+    readOnly
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+  />
+</div>
+
 
         {/* Notes */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-1">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Notes
           </label>
