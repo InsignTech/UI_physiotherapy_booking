@@ -28,7 +28,7 @@ export const PatientManagement = ({ onNavigate }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalPatients, setTotalPatients] = useState(0); // This will hold the overall count from the dashboard
+  const [totalPatients, setTotalPatients] = useState(0);
   const [loading, setLoading] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingPatient, setEditingPatient] = useState(null);
@@ -36,7 +36,6 @@ export const PatientManagement = ({ onNavigate }) => {
 
   const navigate = useNavigate();
 
-  // 2. This useEffect now fetches the total count, just like the dashboard page
   useEffect(() => {
     const fetchTotalCount = async () => {
       try {
@@ -52,9 +51,8 @@ export const PatientManagement = ({ onNavigate }) => {
       }
     };
     fetchTotalCount();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
-  // This useEffect still fetches the paginated list of patients
   const fetchPatients = useCallback(async () => {
     setLoading(true);
     try {
@@ -70,39 +68,36 @@ export const PatientManagement = ({ onNavigate }) => {
       }
       let patientsData = res.data || [];
 
-     const patientsWithAppointments = await Promise.all(
-  patientsData.map(async (patient) => {
-    try {
-      const appRes = await getPatientAppointments(patient._id, 1, 1);
-      const appointments = appRes.data || [];
-      const pagination = appRes.pagination || {};
+      const patientsWithAppointments = await Promise.all(
+        patientsData.map(async (patient) => {
+          try {
+            const appRes = await getPatientAppointments(patient._id, 1, 1);
+            const appointments = appRes.data || [];
+            const pagination = appRes.pagination || {};
+            let pendingBalance = 0;
+            let totalAppointments = 0;
 
-      let pendingBalance = 0;
-      let totalAppointments = 0;
+            if (appointments.length > 0) {
+              pendingBalance = appointments[0].previousBalance || 0;
+            }
+            totalAppointments = pagination.totalRecords || 0;
 
-      if (appointments.length > 0) {
-        // Use previousBalance or patientPendingBalance depending on requirement
-        pendingBalance = appointments[0].previousBalance || 0;
-      }
+            return {
+              ...patient,
+              pendingBalance,
+              totalAppointments,
+            };
+          } catch (err) {
+            console.error(
+              `Failed fetching appointments for ${patient._id}`,
+              err
+            );
+            return { ...patient, pendingBalance: 0, totalAppointments: 0 };
+          }
+        })
+      );
 
-      // Get total records from pagination object
-      totalAppointments = pagination.totalRecords || 0;
-
-      return {
-        ...patient,
-        pendingBalance,
-        totalAppointments,
-      };
-    } catch (err) {
-      console.error(`Failed fetching appointments for ${patient._id}`, err);
-      return { ...patient, pendingBalance: 0, totalAppointments: 0 };
-    }
-  })
-);
-
-setPatients(patientsWithAppointments);
-
-      // 3. We only set the total pages for the pagination component here
+      setPatients(patientsWithAppointments);
       setTotalPages(res.pagination?.totalPages || 1);
     } catch (error) {
       toast.error("Failed to fetch patients.");
@@ -123,7 +118,6 @@ setPatients(patientsWithAppointments);
     try {
       const res = await getPatientAppointments(patient._id, 1, 10);
       const appointments = res.data || res.appointments || [];
-      console.log("dfsdfsdfsd", res.data);
       const hasAppointments =
         Array.isArray(appointments) && appointments.length > 0;
 
@@ -157,7 +151,6 @@ setPatients(patientsWithAppointments);
     setShowAddForm(false);
     setEditingPatient(null);
     setCurrentPage(1);
-    // This will trigger a refetch of the patient list
     fetchPatients();
   };
 
@@ -376,8 +369,9 @@ setPatients(patientsWithAppointments);
                     ))
                   ) : (
                     <tr>
+                      {/* FIX: Corrected colSpan from 6 to 8 */}
                       <td
-                        colSpan="6"
+                        colSpan="8"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         {searchTerm
@@ -390,6 +384,7 @@ setPatients(patientsWithAppointments);
               </table>
             </div>
 
+            {/* MODIFICATION: Mobile and Medium screen view */}
             <div className="lg:hidden">
               {patients.length > 0 ? (
                 <div className="divide-y divide-gray-200">
@@ -445,6 +440,23 @@ setPatients(patientsWithAppointments);
                             </a>
                           </div>
                         </div>
+                        
+                        {/* ADDED: Section for stats on mobile */}
+                        <div className="flex justify-around pt-3 mt-2 border-t border-gray-200">
+                            <div className="text-center">
+                                <p className="text-xs text-gray-500">Pending Balance</p>
+                                <p className="font-bold text-base text-red-600">
+                                    ₹{patient.pendingBalance}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs text-gray-500">Total Visits</p>
+                                <p className="font-bold text-base text-gray-800">
+                                    {patient.totalAppointments}
+                                </p>
+                            </div>
+                        </div>
+
                         <button
                           onClick={() => handleViewAppointments(patient)}
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm w-full mt-2"
@@ -460,7 +472,7 @@ setPatients(patientsWithAppointments);
                 <div className="p-6 sm:p-8 text-center text-gray-500">
                   {searchTerm
                     ? "No patients found matching your search."
-                    : "No patients found."}{" "}
+                    : "No patients found."}
                 </div>
               )}
             </div>
