@@ -62,7 +62,6 @@ export const getPatientAppointments = async (id, page, limit, startDate,endDate)
         if (endDate) params.endDate = endDate;
 
     const response = await PATIENT_INSTANCE.get("/getAllAppointmnets", { params });
-    console.log("dsdsdfdsfdfdsf",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

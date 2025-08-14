@@ -114,6 +114,7 @@ export const PatientManagement = ({ onNavigate }) => {
   }, [fetchPatients]);
 
   const handleViewAppointments = async (patient) => {
+    console.log(patient)
     setLoading(true);
     try {
       const res = await getPatientAppointments(patient._id, 1, 10);
