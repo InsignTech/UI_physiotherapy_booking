@@ -305,7 +305,7 @@ export const PatientManagement = ({ onNavigate }) => {
                       Email
                     </th>
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
-                      Pending Balance
+                      Pending Amount
                     </th>
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Total Appointments
@@ -334,9 +334,10 @@ export const PatientManagement = ({ onNavigate }) => {
                         <td className="px-6 py-4 text-gray-600">
                           {patient.email}
                         </td>
-                        <td className="px-6 py-4 text-gray-600">
+                        <td className="px-6 py-4 font-semibold text-red-600">
                           ₹{patient.pendingBalance}
                         </td>
+
                         <td className="px-6 py-4 text-gray-600">
                           {patient.totalAppointments}
                         </td>
@@ -440,21 +441,25 @@ export const PatientManagement = ({ onNavigate }) => {
                             </a>
                           </div>
                         </div>
-                        
+
                         {/* ADDED: Section for stats on mobile */}
                         <div className="flex justify-around pt-3 mt-2 border-t border-gray-200">
-                            <div className="text-center">
-                                <p className="text-xs text-gray-500">Pending Balance</p>
-                                <p className="font-bold text-base text-red-600">
-                                    ₹{patient.pendingBalance}
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-xs text-gray-500">Total Visits</p>
-                                <p className="font-bold text-base text-gray-800">
-                                    {patient.totalAppointments}
-                                </p>
-                            </div>
+                          <div className="text-center">
+                            <p className="text-xs text-gray-500">
+                              Pending Balance
+                            </p>
+                            <p className="font-bold text-base text-red-600">
+                              ₹{patient.pendingBalance}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs text-gray-500">
+                              Total Visits
+                            </p>
+                            <p className="font-bold text-base text-gray-800">
+                              {patient.totalAppointments}
+                            </p>
+                          </div>
                         </div>
 
                         <button
