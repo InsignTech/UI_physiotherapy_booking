@@ -72,7 +72,6 @@ export const PatientManagement = ({ onNavigate }) => {
         patientsData.map(async (patient) => {
           try {
             const appRes = await getPatientAppointments(patient._id, 1, 1);
-            console.log("appres",appRes)
             const appointments = appRes.data || [];
             const pagination = appRes.pagination || {};
             let pendingBalance = 0;
@@ -115,7 +114,6 @@ export const PatientManagement = ({ onNavigate }) => {
   }, [fetchPatients]);
 
   const handleViewAppointments = async (patient) => {
-    console.log(patient)
     setLoading(true);
     try {
       const res = await getPatientAppointments(patient._id, 1, 10);
@@ -336,7 +334,13 @@ export const PatientManagement = ({ onNavigate }) => {
                         <td className="px-6 py-4 text-gray-600">
                           {patient.email}
                         </td>
-                        <td className="px-6 py-4 font-semibold text-red-600">
+                        <td
+                          className={`px-6 py-4 font-semibold ${
+                            Number(patient.pendingBalance) === 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
                           ₹{patient.pendingBalance}
                         </td>
 
