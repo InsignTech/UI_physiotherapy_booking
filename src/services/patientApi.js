@@ -17,6 +17,7 @@ export const getAllPatients = async (page = 1, limit = 10) => {
     const response = await PATIENT_INSTANCE.get("/", {
       params: { page, limit },
     });
+    console.log('getallpatients',response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -62,6 +63,8 @@ export const getPatientAppointments = async (id, page, limit, startDate,endDate)
         if (endDate) params.endDate = endDate;
 
     const response = await PATIENT_INSTANCE.get("/getAllAppointmnets", { params });
+    console.log("patient appp",response.data);
+    
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -92,6 +95,7 @@ export const addAppointment = async (appointmentData) => {
 export const updateAppointment = async (appointmentId, updateData) => {
   try {
     const response = await PATIENT_INSTANCE.put(`/appointments/${appointmentId}`, updateData);
+    console.log("updateddd",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

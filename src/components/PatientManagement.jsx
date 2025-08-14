@@ -72,6 +72,7 @@ export const PatientManagement = ({ onNavigate }) => {
         patientsData.map(async (patient) => {
           try {
             const appRes = await getPatientAppointments(patient._id, 1, 1);
+            console.log("appres",appRes)
             const appointments = appRes.data || [];
             const pagination = appRes.pagination || {};
             let pendingBalance = 0;

@@ -325,11 +325,13 @@ export const AppointmentManagement = ({ onNavigate }) => {
                     <td className="px-6 py-4">
                       <span
                         className={`font-medium ${getBalanceColor(
+                            appointment.previousBalance,
                           appointment.totalAmount,
                           appointment.paidAmount
                         )}`}
                       >
-                        ₹{appointment.totalAmount - appointment.paidAmount}
+                        ₹
+                        {(appointment.previousBalance)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">

@@ -30,8 +30,8 @@ export const AddAppointmentForm = ({
 
       setFormData({
         patientId: initialData.patientId?._id || initialData.patientId,
-        totalAmount: initialData.totalAmount.toString(),
-        paidAmount: initialData.paidAmount.toString(),
+        totalAmount: initialData.totalAmount?.toString() || "", // Convert to string
+        paidAmount: initialData.paidAmount?.toString() || "", // Convert to string
         appointmentDate: formattedDate,
         notes: initialData.notes || "",
         pendingBalance: initialData.patientPendingBalance || 0,
@@ -74,6 +74,40 @@ export const AddAppointmentForm = ({
     return () => clearTimeout(delayDebounce);
   }, [searchTerm, selectedPatient, isEdit]);
 
+  const handleTotalAmountChange = (e) => {
+    const value = e.target.value;
+    
+    // Allow empty string
+    if (value === '') {
+      setFormData({ ...formData, totalAmount: '' });
+      return;
+    }
+    
+    // Allow valid numbers only
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 500000) {
+      setFormData({ ...formData, totalAmount: value });
+    }
+  };
+
+  const handlePaidAmountChange = (e) => {
+    const value = e.target.value;
+    
+    // Allow empty string
+    if (value === '') {
+      setFormData({ ...formData, paidAmount: '' });
+      return;
+    }
+    
+    // Allow valid numbers with decimal
+    if (/^\d*\.?\d*$/.test(value)) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0 && numValue <= 500000) {
+        setFormData({ ...formData, paidAmount: value });
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -83,8 +117,8 @@ export const AddAppointmentForm = ({
         ...formData,
         patientName: initialData.patientId?.name,
         patientId: initialData.patientId?._id || initialData.patientId,
-        totalAmount: parseInt(formData.totalAmount),
-        paidAmount: parseInt(formData.paidAmount),
+        totalAmount: parseFloat(formData.totalAmount) || 0,
+        paidAmount: parseFloat(formData.paidAmount) || 0,
         appointmentDate: new Date(formData.appointmentDate),
       });
       return;
@@ -104,8 +138,8 @@ export const AddAppointmentForm = ({
       ...formData,
       patientName: patient.name,
       patientId: patient._id,
-      totalAmount: parseInt(formData.totalAmount),
-      paidAmount: parseInt(formData.paidAmount),
+      totalAmount: parseFloat(formData.totalAmount) || 0,
+      paidAmount: parseFloat(formData.paidAmount) || 0,
       appointmentDate: new Date(formData.appointmentDate),
     });
   };
@@ -228,72 +262,37 @@ export const AddAppointmentForm = ({
           />
         </div>
 
-        {/* Total Amount */}
+        {/* Total Amount - Fixed */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Amount
           </label>
           <input
             type="number"
+            placeholder="0"
             value={formData.totalAmount}
-            onChange={(e) => {
-              let value = e.target.value;
-              if (value < 0) value = 0;
-              if (value > 500000) value = 500000;
-
-              setFormData((prev) => ({
-                ...prev,
-                totalAmount: value,
-                // Only auto-set paidAmount if user hasn't changed it manually
-                paidAmount:
-                  prev.paidAmount === "" || prev.paidAmount === prev.totalAmount
-                    ? value
-                    : prev.paidAmount,
-              }));
-            }}
+            onChange={handleTotalAmountChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
             min="0"
             max="500000"
+            step="0.01"
           />
         </div>
 
+        {/* Paid Amount - Fixed */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Paid Amount
           </label>
           <input
-            type="text"
-            value={formData.paidAmount}
-            onChange={(e) => {
-              let raw = e.target.value;
-
-              // Allow only numbers and optional decimal
-              if (!/^\d*\.?\d*$/.test(raw)) return;
-
-              // Remove leading zeros unless "0" or "0.something"
-              if (
-                raw.length > 1 &&
-                raw.startsWith("0") &&
-                !raw.startsWith("0.")
-              ) {
-                raw = raw.replace(/^0+/, "");
-              }
-
-              // Convert to number for comparison
-              const valueNum = parseFloat(raw) || 0;
-              const maxAllowed =
-                (formData.previousBalance || 0) + (formData.totalAmount || 0);
-
-              if (valueNum <= maxAllowed) {
-                setFormData({ ...formData, paidAmount: raw });
-              } else {
-                toast.warning(`Paid amount cannot exceed ₹${maxAllowed}`);
-              }
-            }}
-            inputMode="decimal" // mobile numeric keyboard
+            type="number"
             placeholder="0"
+            value={formData.paidAmount}
+            onChange={handlePaidAmountChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            min="0"
+            max="500000"
+            step="0.01"
             required
           />
         </div>
