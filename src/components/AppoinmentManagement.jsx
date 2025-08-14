@@ -2,13 +2,11 @@ import { AddAppointmentForm } from "./AddAppoinment";
 import { Pagination } from "./Pagination";
 import { useState, useEffect, useCallback } from "react";
 import {
-  Calendar,
   Plus,
   ArrowLeft,
   Edit,
   Trash2,
   User,
-  DollarSign,
   FileText,
   Clock,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import {
   addAppointment,
   updateAppointment,
   deleteAppointment,
+  getPatientByID
 } from "../services/patientApi";
 
 // Helper function to format dates for the API (YYYY-MM-DD)
@@ -31,6 +30,27 @@ export const AppointmentManagement = ({ onNavigate }) => {
   const navigate = useNavigate();
 
   const selectedPatient = location.state?.selectedPatient || null;
+  const [latestPatient, setLatestPatient] = useState(
+    location.state?.selectedPatient || null
+  );
+
+  const refreshPatient = () => {
+    if (!selectedPatient?._id) return;
+    getPatientByID(selectedPatient?._id)
+      .then((res) => {
+        setLatestPatient(res.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching patient details:", error);
+        toast.error("Failed to fetch patient details");
+      });
+  };
+
+  useEffect(() => {
+    console.log(location.state?.selectedPatient);
+    setLatestPatient(location.state?.selectedPatient || null);
+    refreshPatient();
+  }, [location.state?.selectedPatient]);
 
   const [appointments, setAppointments] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,16 +150,17 @@ export const AppointmentManagement = ({ onNavigate }) => {
         await updateAppointment(editingAppointment._id, appointmentData);
         toast.success("Appointment updated successfully");
       } else {
-        await addAppointment(appointmentData);
+        let res = await addAppointment(appointmentData);
         toast.success("Appointment added successfully");
       }
-
+      
       setShowAddForm(false);
       setEditingAppointment(null);
-
+      
       if (currentPage !== 1) {
         setCurrentPage(1);
       }
+      refreshPatient()
       fetchAppointments();
     } catch (error) {
       toast.error(
@@ -162,6 +183,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
       toast.success("Appointment deleted successfully");
       setDeleteConfirmId(null);
       fetchAppointments();
+      refreshPatient()
     } catch (error) {
       toast.error("Failed to delete appointment");
       console.error("Error deleting appointment:", error);
@@ -201,6 +223,20 @@ export const AppointmentManagement = ({ onNavigate }) => {
             </h1>
             <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
               Manage patient appointments
+              {selectedPatient && (
+                <>
+                  {" - Pending Balance: "}
+                  <span
+                    className={
+                      latestPatient?.previousBalance === 0
+                        ? "text-green-600 font-semibold"
+                        : "text-red-600 font-semibold"
+                    }
+                  >
+                    {latestPatient?.previousBalance ?? 0}₹
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -223,7 +259,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
             setShowAddForm(false);
             setEditingAppointment(null);
           }}
-          selectedPatient={selectedPatient}
+          selectedPatient={latestPatient}
           initialData={editingAppointment}
           isEdit={!!editingAppointment}
         />
@@ -325,13 +361,12 @@ export const AppointmentManagement = ({ onNavigate }) => {
                     <td className="px-6 py-4">
                       <span
                         className={`font-medium ${getBalanceColor(
-                            appointment.previousBalance,
+                          appointment.previousBalance,
                           appointment.totalAmount,
                           appointment.paidAmount
                         )}`}
                       >
-                        ₹
-                        {(appointment.previousBalance)}
+                        ₹{appointment.previousBalance}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
@@ -432,11 +467,12 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         </div>
                         <div
                           className={`text-sm font-medium ${getBalanceColor(
+                            appointment.previousBalance,
                             appointment.totalAmount,
                             appointment.paidAmount
                           )}`}
                         >
-                          ₹{appointment.totalAmount - appointment.paidAmount}
+                          ₹{appointment.previousBalance}
                         </div>
                       </div>
                     </div>

@@ -14,7 +14,7 @@ export const AddAppointmentForm = ({
     paidAmount: "",
     appointmentDate: new Date().toISOString().split("T")[0],
     notes: "",
-    pendingBalance: selectedPatient?.pendingBalance || "",
+    pendingBalance: selectedPatient?.previousBalance || "",
   });
 
   // Initialize searchTerm with selectedPatient name if available

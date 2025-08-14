@@ -201,9 +201,9 @@ export const AddPatientForm = ({
           {phoneError && (
             <p className="text-red-500 text-xs mt-1">{phoneError}</p>
           )}
-          <p className="text-gray-500 text-xs mt-1">
+          {/* <p className="text-gray-500 text-xs mt-1">
             {formData.phoneNumber.length}/10 digits
-          </p>
+          </p> */}
         </div>
 
         <div className="md:col-span-2">

@@ -36,6 +36,15 @@ export const searchPatients = async (query) => {
   }
 };
 
+export const getPatientByID = async (id) => {
+  try {
+    const response = await PATIENT_INSTANCE.get(`/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const updatePatient = async (id, patientData) => {
   try {
     const response = await PATIENT_INSTANCE.put(`/${id}`, patientData);

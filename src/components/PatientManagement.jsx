@@ -17,7 +17,6 @@ import { Pagination } from "./Pagination";
 import {
   getAllPatients,
   searchPatients,
-  getPatientAppointments,
   deletePatient,
   getDashboard,
 } from "../services/patientApi";
@@ -67,37 +66,7 @@ export const PatientManagement = ({ onNavigate }) => {
         res = await getAllPatients(currentPage, itemsPerPage);
       }
       let patientsData = res.data || [];
-
-      const patientsWithAppointments = await Promise.all(
-        patientsData.map(async (patient) => {
-          try {
-            const appRes = await getPatientAppointments(patient._id, 1, 1);
-            const appointments = appRes.data || [];
-            const pagination = appRes.pagination || {};
-            let pendingBalance = 0;
-            let totalAppointments = 0;
-
-            if (appointments.length > 0) {
-              pendingBalance = appointments[0].previousBalance || 0;
-            }
-            totalAppointments = pagination.totalRecords || 0;
-
-            return {
-              ...patient,
-              pendingBalance,
-              totalAppointments,
-            };
-          } catch (err) {
-            console.error(
-              `Failed fetching appointments for ${patient._id}`,
-              err
-            );
-            return { ...patient, pendingBalance: 0, totalAppointments: 0 };
-          }
-        })
-      );
-
-      setPatients(patientsWithAppointments);
+       setPatients(patientsData);
       setTotalPages(res.pagination?.totalPages || 1);
     } catch (error) {
       toast.error("Failed to fetch patients.");
@@ -336,12 +305,16 @@ export const PatientManagement = ({ onNavigate }) => {
                         </td>
                         <td
                           className={`px-6 py-4 font-semibold ${
-                            Number(patient.pendingBalance) === 0
+                            Number(patient.
+previousBalance
+) === 0
                               ? "text-green-600"
                               : "text-red-600"
                           }`}
                         >
-                          ₹{patient.pendingBalance}
+                          ₹{patient.
+previousBalance
+}
                         </td>
 
                         <td className="px-6 py-4 text-gray-600">
@@ -455,7 +428,9 @@ export const PatientManagement = ({ onNavigate }) => {
                               Pending Balance
                             </p>
                             <p className="font-bold text-base text-red-600">
-                              ₹{patient.pendingBalance}
+                              ₹{patient.
+previousBalance
+}
                             </p>
                           </div>
                           <div className="text-center">
