@@ -116,17 +116,17 @@ export const PatientManagement = ({ onNavigate }) => {
   const handleViewAppointments = async (patient) => {
     setLoading(true);
     try {
-      const res = await getPatientAppointments(patient._id, 1, 10);
-      const appointments = res.data || res.appointments || [];
-      const hasAppointments =
-        Array.isArray(appointments) && appointments.length > 0;
+      // const res = await getPatientAppointments(patient._id, 1, 10);
+      // const appointments = res.data || res.appointments || [];
+      // const hasAppointments =
+      //   Array.isArray(appointments) && appointments.length > 0;
 
-      if (hasAppointments) {
+      // if (hasAppointments) {
         navigate("/appointments", { state: { selectedPatient: patient } });
-      } else {
-        toast.info(`${patient.name} has no appointments.`);
-        navigate("/appointments");
-      }
+      // } else {
+      //   toast.info(`${patient.name} has no appointments.`);
+      
+      // }
     } catch (error) {
       console.error("Error checking appointments:", error);
       toast.error("Could not check appointments.");
