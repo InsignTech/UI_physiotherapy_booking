@@ -156,13 +156,21 @@ export const PatientManagement = ({ onNavigate }) => {
           </p>
         </div>
         {!showAddForm ? (
+           <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate("/appointments")}
+            className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+          >
+            Appointments
+          </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+            className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Patient
           </button>
+          </div>
         ) : (
           <button
             onClick={() => setShowAddForm(false)}
