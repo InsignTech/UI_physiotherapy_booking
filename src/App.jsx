@@ -44,7 +44,7 @@ const App = () => {
               />
             }
           />
-          <Route path="*" element={<Navigate to="/patients" />} />
+          <Route path="*" element={<Navigate to="/appointments" />} />
           <Route path="/calendar" element={<AppointmentCalendarMonitor />} />
         </Routes>
       </div>

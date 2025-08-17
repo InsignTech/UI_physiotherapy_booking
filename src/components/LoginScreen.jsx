@@ -14,7 +14,7 @@ export const LoginScreen = ({ onLogin }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/patient", { replace: true });
+      navigate("/appointments", { replace: true });
     }
   }, [navigate]);
 

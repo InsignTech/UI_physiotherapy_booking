@@ -34,7 +34,7 @@ export const AddAppointmentForm = ({
         paidAmount: initialData.paidAmount?.toString() || "", // Convert to string
         appointmentDate: formattedDate,
         notes: initialData.notes || "",
-        pendingBalance: initialData.patientPendingBalance || 0,
+        pendingBalance: initialData.previousBalance || 0,
       });
 
       // Set the patient name for display
@@ -148,7 +148,7 @@ export const AddAppointmentForm = ({
     setFormData({
       ...formData,
       patientId: patient._id,
-      pendingBalance: patient.pendingBalance || 0,
+      pendingBalance: patient.previousBalance || 0,
     });
     setSearchTerm(patient.name);
     setShowDropdown(false);

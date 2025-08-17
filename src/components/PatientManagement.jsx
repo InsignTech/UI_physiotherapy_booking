@@ -66,7 +66,7 @@ export const PatientManagement = ({ onNavigate }) => {
         res = await getAllPatients(currentPage, itemsPerPage);
       }
       let patientsData = res.data || [];
-       setPatients(patientsData);
+      setPatients(patientsData);
       setTotalPages(res.pagination?.totalPages || 1);
     } catch (error) {
       toast.error("Failed to fetch patients.");
@@ -91,10 +91,10 @@ export const PatientManagement = ({ onNavigate }) => {
       //   Array.isArray(appointments) && appointments.length > 0;
 
       // if (hasAppointments) {
-        navigate("/appointments", { state: { selectedPatient: patient } });
+      navigate("/appointments", { state: { selectedPatient: patient } });
       // } else {
       //   toast.info(`${patient.name} has no appointments.`);
-      
+
       // }
     } catch (error) {
       console.error("Error checking appointments:", error);
@@ -305,16 +305,12 @@ export const PatientManagement = ({ onNavigate }) => {
                         </td>
                         <td
                           className={`px-6 py-4 font-semibold ${
-                            Number(patient.
-previousBalance
-) === 0
+                            Number(patient.previousBalance) === 0
                               ? "text-green-600"
                               : "text-red-600"
                           }`}
                         >
-                          ₹{patient.
-previousBalance
-}
+                          ₹{patient.previousBalance}
                         </td>
 
                         <td className="px-6 py-4 text-gray-600">
@@ -428,9 +424,7 @@ previousBalance
                               Pending Balance
                             </p>
                             <p className="font-bold text-base text-red-600">
-                              ₹{patient.
-previousBalance
-}
+                              ₹{patient.previousBalance}
                             </p>
                           </div>
                           <div className="text-center">

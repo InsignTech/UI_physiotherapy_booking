@@ -17,7 +17,7 @@ import {
   addAppointment,
   updateAppointment,
   deleteAppointment,
-  getPatientByID
+  getPatientByID,
 } from "../services/patientApi";
 
 // Helper function to format dates for the API (YYYY-MM-DD)
@@ -60,9 +60,23 @@ export const AppointmentManagement = ({ onNavigate }) => {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const itemsPerPage = 10;
 
+  const now = new Date();
+  let startDate = "";
+  let endDate = "";
+  // Handler for filter changes
+  const toLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   // State for new date filters
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [activeFilter, setActiveFilter] = useState("today");
+  const [dateRange, setDateRange] = useState({
+    start: toLocalDateString(now),
+    end: "",
+  });
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -87,24 +101,13 @@ export const AppointmentManagement = ({ onNavigate }) => {
     fetchAppointments();
   }, [fetchAppointments]);
 
-  // Handler for filter changes
-  const toLocalDateString = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
     setCurrentPage(1);
 
-    const now = new Date();
-    let startDate = "";
-    let endDate = "";
-
     switch (filter) {
       case "today":
+      default:
         startDate = toLocalDateString(now);
         endDate = ""; // no end date for today
         break;
@@ -135,7 +138,6 @@ export const AppointmentManagement = ({ onNavigate }) => {
         break;
       }
       case "all":
-      default:
         startDate = "";
         endDate = "";
         break;
@@ -153,14 +155,14 @@ export const AppointmentManagement = ({ onNavigate }) => {
         let res = await addAppointment(appointmentData);
         toast.success("Appointment added successfully");
       }
-      
+
       setShowAddForm(false);
       setEditingAppointment(null);
-      
+
       if (currentPage !== 1) {
         setCurrentPage(1);
       }
-      refreshPatient()
+      refreshPatient();
       fetchAppointments();
     } catch (error) {
       toast.error(
@@ -183,7 +185,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
       toast.success("Appointment deleted successfully");
       setDeleteConfirmId(null);
       fetchAppointments();
-      refreshPatient()
+      refreshPatient();
     } catch (error) {
       toast.error("Failed to delete appointment");
       console.error("Error deleting appointment:", error);
@@ -240,16 +242,25 @@ export const AppointmentManagement = ({ onNavigate }) => {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => {
-            setShowAddForm(true);
-            setEditingAppointment(null);
-          }}
-          className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          Add Appointment
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate("/patients")}
+            className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+          >
+            Patients
+          </button>
+
+          <button
+            onClick={() => {
+              setShowAddForm(true);
+              setEditingAppointment(null);
+            }}
+            className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            Add Appointment
+          </button>
+        </div>
       </div>
 
       {showAddForm && (
