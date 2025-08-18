@@ -21,7 +21,6 @@ import {
 } from "../services/patientApi";
 import { AddPatientForm } from "./AddPatient";
 
-
 // Helper function to format dates for the API (YYYY-MM-DD)
 const toApiDateString = (date) => {
   return date.toISOString().split("T")[0];
@@ -82,10 +81,6 @@ export const AppointmentManagement = ({ onNavigate }) => {
     start: toLocalDateString(now),
     end: "",
   });
-
-
-  
-  
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -255,47 +250,46 @@ export const AppointmentManagement = ({ onNavigate }) => {
             </p>
           </div>
         </div>
-       <div className="flex flex-wrap gap-3">
-  <button
-    onClick={() => navigate("/patients")}
-    className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
-  >
-    Patients
-  </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate("/patients")}
+            className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
+          >
+            Patients
+          </button>
 
-  <button
-    onClick={() => setShowAddPatientForm(true)}
-    className="bg-yellow-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
-  >
-    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-    Add Patient
-  </button>
+          <button
+            onClick={() => setShowAddPatientForm(true)}
+            className="bg-yellow-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            Add Patient
+          </button>
 
-  <button
-    onClick={() => {
-      setShowAddForm(true);
-      setEditingAppointment(null);
-    }}
-    className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
-  >
-    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-    Add Appointment
-  </button>
-</div>
-
+          <button
+            onClick={() => {
+              setShowAddForm(true);
+              setEditingAppointment(null);
+            }}
+            className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-32 md:w-auto"
+          >
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            Add Appointment
+          </button>
+        </div>
       </div>
 
-       {showAddPatientForm && (
-              <AddPatientForm
-                onSubmit={handleAddPatient}
-                onCancel={() => {
-                  setShowAddPatientForm(false);
-                  setEditingPatient(null);
-                }}
-                initialData={editingPatient}
-                isEdit={!!editingPatient}
-              />
-            )}
+      {showAddPatientForm && (
+        <AddPatientForm
+          onSubmit={handleAddPatient}
+          onCancel={() => {
+            setShowAddPatientForm(false);
+            setEditingPatient(null);
+          }}
+          initialData={editingPatient}
+          isEdit={!!editingPatient}
+        />
+      )}
 
       {showAddForm && (
         <AddAppointmentForm
@@ -341,7 +335,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex flex-wrap items-center gap-2">
-            {[ "today","all", "this_week", "this_month"].map((filter) => (
+            {["today", "all", "this_week", "this_month"].map((filter) => (
               // Styling updated for smaller filter buttons
               <button
                 key={filter}
@@ -512,9 +506,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         </div>
                         <div
                           className={`text-sm font-medium ${getBalanceColor(
-                            appointment.previousBalance,
-                            appointment.totalAmount,
-                            appointment.paidAmount
+                           
                           )}`}
                         >
                           ₹{appointment.previousBalance}
@@ -529,7 +521,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           <div className="text-xs text-gray-500 mb-1">
                             Notes
                           </div>
-                          <div className="text-sm text-gray-700 line-clamp-2">
+                          <div className="text-sm text-gray-700 line-clamp-2 break-words">
                             {appointment.notes}
                           </div>
                         </div>

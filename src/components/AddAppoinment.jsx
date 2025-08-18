@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { searchPatients } from "../services/patientApi"; // make sure path is correct
+import { searchPatients } from "../services/patientApi";
+import { toast } from "react-toastify";
 
 export const AddAppointmentForm = ({
   onSubmit,
@@ -21,6 +22,7 @@ export const AddAppointmentForm = ({
   const [searchTerm, setSearchTerm] = useState(selectedPatient?.name || "");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [paidAmountError, setPaidAmountError] = useState("");
 
   // Populate form with initial data when editing
   useEffect(() => {
@@ -110,7 +112,11 @@ export const AddAppointmentForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    if (paidAmountError) {
+      toast.error(paidAmountError);
+      return;
+    }
+    
     // If editing, use the existing patient info
     if (isEdit && initialData) {
       onSubmit({
@@ -180,6 +186,25 @@ export const AddAppointmentForm = ({
     }
   };
 
+  // ... after other useEffect hooks
+
+  useEffect(() => {
+    const total = parseFloat(formData.totalAmount) || 0;
+    const paid = parseFloat(formData.paidAmount) || 0;
+    const pending = parseFloat(formData.pendingBalance) || 0;
+
+    // The maximum amount that can be paid
+    const maxAllowedPayment = total + pending;
+
+    if (paid > maxAllowedPayment) {
+      setPaidAmountError(
+        `Paid amount cannot exceed the total due of ${maxAllowedPayment}`
+      );
+    } else {
+      // Clear error if the amount is valid
+      setPaidAmountError("");
+    }
+  }, [formData.paidAmount, formData.totalAmount, formData.pendingBalance]);
   // Determine if patient input should be readonly
   const isPatientReadonly = selectedPatient || isEdit;
 
@@ -281,6 +306,7 @@ export const AddAppointmentForm = ({
         </div>
 
         {/* Paid Amount - Fixed */}
+        {/* Paid Amount - With Validation */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Paid Amount
@@ -290,12 +316,20 @@ export const AddAppointmentForm = ({
             placeholder="0"
             value={formData.paidAmount}
             onChange={handlePaidAmountChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 ${
+              paidAmountError
+                ? "border-red-500 focus:ring-red-500" // Error state
+                : "border-gray-300 focus:ring-blue-500" // Default state
+            }`}
             min="0"
             max="500000"
             step="0.01"
             required
           />
+          {/* Display validation error message */}
+          {paidAmountError && (
+            <p className="text-sm text-red-600 mt-1">{paidAmountError}</p>
+          )}
         </div>
 
         {/* Pending Balance */}
