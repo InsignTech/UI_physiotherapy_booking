@@ -112,11 +112,11 @@ export const AddPatientForm = ({
         setPhoneError("");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          `Failed to ${isEdit ? "update" : "add"} patient. Please try again.`
-      );
+       toast.error(
+          isEdit
+            ? "Failed to update patient. Please try again."
+            : "Failed to add patient. Patient already exist."
+        );
       console.error("Error saving patient:", error);
     } finally {
       setIsSubmitting(false);
