@@ -76,13 +76,13 @@ export const AddAppointmentForm = ({
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
-    
+
     // Allow empty string
-    if (value === '') {
-      setFormData({ ...formData, totalAmount: '' });
+    if (value === "") {
+      setFormData({ ...formData, totalAmount: "" });
       return;
     }
-    
+
     // Allow valid numbers only
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 500000) {
@@ -92,13 +92,13 @@ export const AddAppointmentForm = ({
 
   const handlePaidAmountChange = (e) => {
     const value = e.target.value;
-    
+
     // Allow empty string
-    if (value === '') {
-      setFormData({ ...formData, paidAmount: '' });
+    if (value === "") {
+      setFormData({ ...formData, paidAmount: "" });
       return;
     }
-    
+
     // Allow valid numbers with decimal
     if (/^\d*\.?\d*$/.test(value)) {
       const numValue = parseFloat(value);
@@ -228,6 +228,7 @@ export const AddAppointmentForm = ({
                     className="px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
                     <div className="font-medium">{patient.name}</div>
+                    <div className="font-medium">{patient.phoneNumber}</div>
                   </li>
                 ))}
               </ul>
