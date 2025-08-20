@@ -278,15 +278,15 @@ export const PatientManagement = ({ onNavigate }) => {
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Phone
                     </th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
+                    {/* <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Email
-                    </th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
+                    </th> */}
+                    {/* <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Pending Amount
                     </th>
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Total Appointments
-                    </th>
+                    </th> */}
                     <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                       Actions
                     </th>
@@ -308,10 +308,10 @@ export const PatientManagement = ({ onNavigate }) => {
                         <td className="px-6 py-4 text-gray-600">
                           {patient.phoneNumber}
                         </td>
-                        <td className="px-6 py-4 text-gray-600">
+                        {/* <td className="px-6 py-4 text-gray-600">
                           {patient.email}
-                        </td>
-                        <td
+                        </td> */}
+                        {/* <td
                           className={`px-6 py-4 font-semibold ${
                             Number(patient.previousBalance) === 0
                               ? "text-green-600"
@@ -319,11 +319,11 @@ export const PatientManagement = ({ onNavigate }) => {
                           }`}
                         >
                           ₹{patient.previousBalance}
-                        </td>
+                        </td> */}
 
-                        <td className="px-6 py-4 text-gray-600">
+                        {/* <td className="px-6 py-4 text-gray-600">
                           {patient.totalAppointments}
-                        </td>
+                        </td> */}
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
                             <button
@@ -380,12 +380,12 @@ export const PatientManagement = ({ onNavigate }) => {
                             <h3 className="font-semibold text-gray-900 text-lg">
                               {patient.name}
                             </h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                            {/* <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                               <span className="flex items-center gap-1">
                                 <User className="w-3 h-3" />
                                 {patient.age} years, {patient.gender}
                               </span>
-                            </div>
+                            </div> */}
                           </div>
                           <div className="flex gap-1">
                             <button
@@ -414,7 +414,7 @@ export const PatientManagement = ({ onNavigate }) => {
                               {patient.phoneNumber}
                             </a>
                           </div>
-                          <div className="flex items-center gap-2">
+                          {/* <div className="flex items-center gap-2">
                             <Mail className="w-3 h-3" />
                             <a
                               href={`mailto:${patient.email}`}
@@ -422,10 +422,10 @@ export const PatientManagement = ({ onNavigate }) => {
                             >
                               {patient.email}
                             </a>
-                          </div>
+                          </div> */}
                         </div>
 
-                        {/* ADDED: Section for stats on mobile */}
+                        {/* ADDED: Section for stats on mobile
                         <div className="flex justify-around pt-3 mt-2 border-t border-gray-200">
                           <div className="text-center">
                             <p className="text-xs text-gray-500">
@@ -443,7 +443,7 @@ export const PatientManagement = ({ onNavigate }) => {
                               {patient.totalAppointments}
                             </p>
                           </div>
-                        </div>
+                        </div> */}
 
                         <button
                           onClick={() => handleViewAppointments(patient)}

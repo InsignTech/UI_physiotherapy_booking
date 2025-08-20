@@ -62,6 +62,8 @@ export const AppointmentManagement = ({ onNavigate }) => {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [editingPatient, setEditingPatient] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [copyConfirmAppointment, setCopyConfirmAppointment] = useState(null);
+
   const itemsPerPage = 10;
 
   const now = new Date();
@@ -182,6 +184,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
     setEditingAppointment(appointment);
     setShowAddForm(true);
   };
+  const handleCopyAppointment = (appointment) => {
+    setCopyConfirmAppointment(appointment);
+  };
 
   const handleDeleteAppointment = async (appointmentId) => {
     try {
@@ -235,6 +240,10 @@ export const AppointmentManagement = ({ onNavigate }) => {
               Manage patient appointments
               {selectedPatient && (
                 <>
+                  {" · Age: "}
+                  <span className="font-medium">{latestPatient.age}</span>
+                  {" · Gender: "}
+                  <span className="font-medium">{latestPatient.gender}</span>
                   {" - Pending Balance: "}
                   <span
                     className={
@@ -302,6 +311,58 @@ export const AppointmentManagement = ({ onNavigate }) => {
           initialData={editingAppointment}
           isEdit={!!editingAppointment}
         />
+      )}
+      {copyConfirmAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Confirm Copy
+            </h3>
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
+              Are you sure you want to copy this appointment for{" "}
+              <span className="font-medium">
+                {copyConfirmAppointment.patientId?.name || "Unknown"}
+              </span>{" "}
+              {/* on {formatDate(copyConfirmAppointment.appointmentDate)}? */}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <button
+                onClick={async () => {
+                  try {
+                    const newAppointment = {
+                      patientId:
+                        copyConfirmAppointment.patientId?._id ||
+                        copyConfirmAppointment.patientId,
+                      appointmentDate: copyConfirmAppointment.appointmentDate,
+                      totalAmount: 0,
+                      paidAmount: 0,
+                      notes: "",
+                    };
+
+                    await addAppointment(newAppointment);
+                    toast.success("Appointment copied successfully");
+                    setCopyConfirmAppointment(null);
+                    if (currentPage !== 1) setCurrentPage(1);
+                    refreshPatient();
+                    fetchAppointments();
+                  } catch (error) {
+                    toast.error("Failed to copy appointment");
+                    console.error("Error copying appointment:", error);
+                  }
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setCopyConfirmAppointment(null)}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors text-sm sm:text-base"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {deleteConfirmId && (
@@ -427,6 +488,13 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => handleCopyAppointment(appointment)}
+                          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                          title="Copy Appointment"
+                        >
+                          Copy
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -505,9 +573,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           Balance
                         </div>
                         <div
-                          className={`text-sm font-medium ${getBalanceColor(
-                           
-                          )}`}
+                          className={`text-sm font-medium ${getBalanceColor()}`}
                         >
                           ₹{appointment.previousBalance}
                         </div>
