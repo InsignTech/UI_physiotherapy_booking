@@ -551,32 +551,34 @@ export const AppointmentManagement = ({ onNavigate }) => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 mb-1">
+                    <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500 mb-1">
                           Total Amount
-                        </div>
-                        <div className="text-sm font-medium text-gray-900">
+                        </span>
+                        <span className="text-sm font-medium text-gray-900">
                           ₹{appointment.totalAmount}
-                        </div>
+                        </span>
                       </div>
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 mb-1">
+
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500 mb-1">
                           Paid Amount
-                        </div>
-                        <div className="text-sm font-medium text-green-600">
+                        </span>
+                        <span className="text-sm font-medium text-green-600">
                           ₹{appointment.paidAmount}
-                        </div>
+                        </span>
                       </div>
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 mb-1">
+
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500 mb-1">
                           Balance
-                        </div>
-                        <div
+                        </span>
+                        <span
                           className={`text-sm font-medium ${getBalanceColor()}`}
                         >
                           ₹{appointment.previousBalance}
-                        </div>
+                        </span>
                       </div>
                     </div>
 
