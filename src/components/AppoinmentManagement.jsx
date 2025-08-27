@@ -532,29 +532,47 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           <span>{formatDate(appointment.appointmentDate)}</span>
                         </div>
                       </div>
-
-                      <div className="flex gap-1 ml-4">
-                        <button
-                          onClick={() => handleEditAppointment(appointment)}
-                          className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"
-                          title="Edit Appointment"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmId(appointment._id)}
-                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"
-                          title="Delete Appointment"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleCopyAppointment(appointment)}
-                          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
-                          title="Copy Appointment"
-                        >
-                          Copy
-                        </button>
+                      <div>
+                        <div className="flex gap-1 ml-4">
+                          <button
+                            onClick={() => handleEditAppointment(appointment)}
+                            className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg"
+                            title="Edit Appointment"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(appointment._id)}
+                            className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg"
+                            title="Delete Appointment"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCopyAppointment(appointment)}
+                            className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                            title="Copy Appointment"
+                          >
+                            Copy
+                          </button>
+                        </div>
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="ml-auto">
+                            <div
+                              className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium ${
+                                appointment.totalAmount ===
+                                appointment.paidAmount
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-orange-100 text-orange-800"
+                              }`}
+                            >
+                              {appointment.totalAmount ===
+                              appointment.paidAmount
+                                ? "Fully Paid"
+                                : "Pending Payment"}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -602,20 +620,6 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         </div>
                       </div>
                     )}
-
-                    <div className="flex justify-between items-center pt-2">
-                      <div
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          appointment.totalAmount === appointment.paidAmount
-                            ? "bg-green-100 text-green-800"
-                            : "bg-orange-100 text-orange-800"
-                        }`}
-                      >
-                        {appointment.totalAmount === appointment.paidAmount
-                          ? "Fully Paid"
-                          : "Pending Payment"}
-                      </div>
-                    </div>
                   </div>
                 </div>
               ))}

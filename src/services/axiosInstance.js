@@ -1,7 +1,8 @@
 import axios from "axios";
 
 export const baseURL =
-  import.meta.env.API_URL ||'https://apis-physio.insigntechsolutions.com';
+  import.meta.env.API_URL ||
+  'https://apis-physio.insigntechsolutions.com';
   //"http://localhost:7000";
 
 const createAxiosInstance = (baseURL, defaultHeaders = {}) => {
