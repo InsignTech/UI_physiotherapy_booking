@@ -548,10 +548,17 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => handleCopyAppointment(appointment)}
+                          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                          title="Copy Appointment"
+                        >
+                          Copy
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
+                    {/* <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-500 mb-1">
                           Total Amount
@@ -580,7 +587,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           ₹{appointment.previousBalance}
                         </span>
                       </div>
-                    </div>
+                    </div> */}
 
                     {appointment.notes && (
                       <div className="flex items-start gap-2">

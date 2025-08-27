@@ -50,7 +50,7 @@ export const Navigation = ({ currentView }) => {
               <div className="bg-blue-100 w-8 h-8 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
-              <h1 className="text-lg sm:text-xl font-bold text-gray-800">Physio Portal</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-blue-600">Revive Physiotherapy</h1>
             </div>
             
             {/* Desktop navigation - hidden on mobile */}
