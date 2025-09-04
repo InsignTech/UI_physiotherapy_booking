@@ -9,6 +9,7 @@ import {
   User,
   FileText,
   Clock,
+  Calendar
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -201,12 +202,32 @@ export const AppointmentManagement = ({ onNavigate }) => {
     }
   };
 
+  const formatTime = (dateString) => {
+    const d = new Date(dateString);
+
+    // Convert to Indian time
+    return d.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true, // AM/PM format
+    });
+  };
   const formatDate = (dateString) => {
     const d = new Date(dateString);
     return `${String(d.getDate()).padStart(2, "0")}-${String(
       d.getMonth() + 1
     ).padStart(2, "0")}-${d.getFullYear()}`;
   };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todayAppointments = appointments.filter((apt) => {
+    const aptDate = new Date(apt.appointmentDate);
+    aptDate.setHours(0, 0, 0, 0);
+    return aptDate.getTime() === today.getTime();
+  });
 
   const getBalanceColor = (totalAmount, paidAmount) => {
     const balance = totalAmount - paidAmount;
@@ -256,6 +277,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
                   </span>
                 </>
               )}
+            </p>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+              Today's Appointments {todayAppointments.length}
             </p>
           </div>
         </div>
@@ -426,6 +450,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
                   Date
                 </th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
+                  Time
+                </th>
+                <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
                   Total Amount
                 </th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">
@@ -451,6 +478,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {formatDate(appointment.appointmentDate)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {formatTime(appointment.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       ₹{appointment.totalAmount}
@@ -528,8 +558,12 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           </h3>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Clock className="w-3 h-3 text-gray-400" />
+                          <Calendar className="w-3 h-3 text-gray-400" />
                           <span>{formatDate(appointment.appointmentDate)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="w-3 h-3 text-gray-400" />{" "}
+                          <span>{formatTime(appointment.createdAt)}</span>
                         </div>
                       </div>
                       <div>
