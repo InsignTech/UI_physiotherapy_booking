@@ -9,7 +9,7 @@ import {
   User,
   FileText,
   Clock,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -480,7 +480,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
                       {formatDate(appointment.appointmentDate)}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {formatTime(appointment.createdAt)}
+                      {appointment.updatedAt
+                        ? `${formatTime(appointment.updatedAt)}`
+                        : formatTime(appointment.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       ₹{appointment.totalAmount}
@@ -563,7 +565,9 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock className="w-3 h-3 text-gray-400" />{" "}
-                          <span>{formatTime(appointment.createdAt)}</span>
+                          {appointment.updatedAt
+                            ? `${formatTime(appointment.updatedAt)} `
+                            : formatTime(appointment.createdAt)}
                         </div>
                       </div>
                       <div>
