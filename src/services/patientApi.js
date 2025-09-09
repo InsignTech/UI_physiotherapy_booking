@@ -39,6 +39,7 @@ export const searchPatients = async (query) => {
 export const getPatientByID = async (id) => {
   try {
     const response = await PATIENT_INSTANCE.get(`/${id}`);
+    console.log("patient by id",response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { searchPatients } from "../services/patientApi";
+import { searchPatients, getPatientByID } from "../services/patientApi";
 import { toast } from "react-toastify";
 
 export const AddAppointmentForm = ({
@@ -15,14 +15,25 @@ export const AddAppointmentForm = ({
     paidAmount: "",
     appointmentDate: new Date().toISOString().split("T")[0],
     notes: "",
-    pendingBalance: selectedPatient?.previousBalance || "",
   });
 
-  // Initialize searchTerm with selectedPatient name if available
-  const [searchTerm, setSearchTerm] = useState(selectedPatient?.name || "");
-  const [searchResults, setSearchResults] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [paidAmountError, setPaidAmountError] = useState("");
+  // ✅ fix: initialize with 0 instead of "second"
+  const [balance, setBalance] = useState(0);
+
+  // ✅ fetch patient balance directly
+  const fetchPatientBalance = async (patientId) => {
+    try {
+      const patientData = await getPatientByID(patientId);
+      const bal = patientData.data.previousBalance || 0;
+      console.log("Fetched patient balance:", bal);
+      setBalance(bal);
+      return bal;
+    } catch (error) {
+      console.error("Error fetching patient balance:", error);
+      setBalance(0);
+      return 0;
+    }
+  };
 
   // Populate form with initial data when editing
   useEffect(() => {
@@ -30,25 +41,39 @@ export const AddAppointmentForm = ({
       const appointmentDate = new Date(initialData.appointmentDate);
       const formattedDate = appointmentDate.toISOString().split("T")[0];
 
-      setFormData({
-        patientId: initialData.patientId?._id || initialData.patientId,
-        totalAmount: initialData.totalAmount?.toString() || "", // Convert to string
-        paidAmount: initialData.paidAmount?.toString() || "", // Convert to string
-        appointmentDate: formattedDate,
-        notes: initialData.notes || "",
-        pendingBalance: initialData.previousBalance || 0,
-      });
+      const loadPatientData = async () => {
+        const bal = await fetchPatientBalance(
+          initialData.patientId?._id || initialData.patientId
+        );
 
-      // Set the patient name for display
-      if (initialData.patientId?.name) {
-        setSearchTerm(initialData.patientId.name);
-      }
+        setFormData({
+          patientId: initialData.patientId?._id || initialData.patientId,
+          totalAmount: initialData.totalAmount?.toString() || "",
+          paidAmount: initialData.paidAmount?.toString() || "",
+          appointmentDate: formattedDate,
+          notes: initialData.notes || "",
+        });
+
+        if (initialData.patientId?.name) {
+          setSearchTerm(initialData.patientId.name);
+        }
+
+        // ✅ keep balance in its own state
+        setBalance(bal);
+      };
+
+      loadPatientData();
     }
   }, [isEdit, initialData]);
 
+  // Initialize searchTerm with selectedPatient name if available
+  const [searchTerm, setSearchTerm] = useState(selectedPatient?.name || "");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [paidAmountError, setPaidAmountError] = useState("");
+
   // Search patients when typing (only if no selectedPatient and not editing)
   useEffect(() => {
-    // Don't search if a patient is already selected or if we're editing
     if (selectedPatient || isEdit) {
       setSearchResults([]);
       setShowDropdown(false);
@@ -76,16 +101,24 @@ export const AddAppointmentForm = ({
     return () => clearTimeout(delayDebounce);
   }, [searchTerm, selectedPatient, isEdit]);
 
+  // Fetch balance if selectedPatient is already passed (Add Appointment without search)
+useEffect(() => {
+  if (selectedPatient && !isEdit) {
+    const loadBalance = async () => {
+      const bal = await fetchPatientBalance(selectedPatient._id);
+      setBalance(bal);
+    };
+    loadBalance();
+  }
+}, [selectedPatient, isEdit]);
+
+
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
-
-    // Allow empty string
     if (value === "") {
       setFormData({ ...formData, totalAmount: "" });
       return;
     }
-
-    // Allow valid numbers only
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 500000) {
       setFormData({ ...formData, totalAmount: value });
@@ -94,14 +127,10 @@ export const AddAppointmentForm = ({
 
   const handlePaidAmountChange = (e) => {
     const value = e.target.value;
-
-    // Allow empty string
     if (value === "") {
       setFormData({ ...formData, paidAmount: "" });
       return;
     }
-
-    // Allow valid numbers with decimal
     if (/^\d*\.?\d*$/.test(value)) {
       const numValue = parseFloat(value);
       if (!isNaN(numValue) && numValue >= 0 && numValue <= 500000) {
@@ -117,7 +146,6 @@ export const AddAppointmentForm = ({
       return;
     }
 
-    // If editing, use the existing patient info
     if (isEdit && initialData) {
       onSubmit({
         ...formData,
@@ -126,11 +154,11 @@ export const AddAppointmentForm = ({
         totalAmount: parseFloat(formData.totalAmount) || 0,
         paidAmount: parseFloat(formData.paidAmount) || 0,
         appointmentDate: new Date(formData.appointmentDate),
+        previousBalance: balance, // ✅ use balance here
       });
       return;
     }
 
-    // If selectedPatient exists, use it; otherwise find from search results
     const patient =
       selectedPatient ||
       searchResults.find((p) => p._id === formData.patientId);
@@ -147,6 +175,7 @@ export const AddAppointmentForm = ({
       totalAmount: parseFloat(formData.totalAmount) || 0,
       paidAmount: parseFloat(formData.paidAmount) || 0,
       appointmentDate: new Date(formData.appointmentDate),
+      previousBalance: balance, // ✅ also pass in add mode
     });
   };
 
@@ -154,46 +183,26 @@ export const AddAppointmentForm = ({
     setFormData({
       ...formData,
       patientId: patient._id,
-      pendingBalance: patient.previousBalance || 0,
     });
     setSearchTerm(patient.name);
     setShowDropdown(false);
-
-    // Optional: Fetch complete patient details if balance is not included in search
-    if (!patient.pendingBalance && !patient.patientPendingBalance) {
-      try {
-        const fullPatientData = await getPatientById(patient._id);
-        setFormData((prev) => ({
-          ...prev,
-          pendingBalance:
-            fullPatientData.pendingBalance ||
-            fullPatientData.patientPendingBalance ||
-            0,
-        }));
-      } catch (error) {
-        console.error("Error fetching patient details:", error);
-      }
-    }
+    setBalance(patient.previousBalance || 0);
   };
 
   const handleSearchTermChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-
-    // Reset patientId if user is typing (and not selectedPatient and not editing)
     if (!selectedPatient && !isEdit) {
       setFormData({ ...formData, patientId: "" });
     }
   };
 
-  // ... after other useEffect hooks
-
+  // Validation
   useEffect(() => {
     const total = parseFloat(formData.totalAmount) || 0;
     const paid = parseFloat(formData.paidAmount) || 0;
-    const pending = parseFloat(formData.pendingBalance) || 0;
+    const pending = parseFloat(balance) || 0;
 
-    // The maximum amount that can be paid
     const maxAllowedPayment = total + pending;
 
     if (paid > maxAllowedPayment) {
@@ -201,11 +210,10 @@ export const AddAppointmentForm = ({
         `Paid amount cannot exceed the total due of ${maxAllowedPayment}`
       );
     } else {
-      // Clear error if the amount is valid
       setPaidAmountError("");
     }
-  }, [formData.paidAmount, formData.totalAmount, formData.pendingBalance]);
-  // Determine if patient input should be readonly
+  }, [formData.paidAmount, formData.totalAmount, balance]);
+
   const isPatientReadonly = selectedPatient || isEdit;
 
   return (
@@ -217,7 +225,7 @@ export const AddAppointmentForm = ({
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        {/* Patient Search Input */}
+        {/* Patient Input */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Patient
@@ -239,8 +247,6 @@ export const AddAppointmentForm = ({
             required
             readOnly={isPatientReadonly}
           />
-
-          {/* Show dropdown only if no selectedPatient, not editing, and there are search results */}
           {!selectedPatient &&
             !isEdit &&
             showDropdown &&
@@ -258,18 +264,6 @@ export const AddAppointmentForm = ({
                 ))}
               </ul>
             )}
-
-          {/* Show appropriate message */}
-          {selectedPatient && (
-            <p className="text-sm text-gray-500 mt-1">
-              Patient selected: {selectedPatient.name}
-            </p>
-          )}
-          {isEdit && !selectedPatient && (
-            <p className="text-sm text-gray-500 mt-1">
-              Patient cannot be changed when editing appointment
-            </p>
-          )}
         </div>
 
         {/* Appointment Date */}
@@ -284,11 +278,11 @@ export const AddAppointmentForm = ({
               setFormData({ ...formData, appointmentDate: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          //  disabled
+            required
           />
         </div>
 
-        {/* Total Amount - Fixed */}
+        {/* Total Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Amount
@@ -305,8 +299,7 @@ export const AddAppointmentForm = ({
           />
         </div>
 
-        {/* Paid Amount - Fixed */}
-        {/* Paid Amount - With Validation */}
+        {/* Paid Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Paid Amount
@@ -318,14 +311,13 @@ export const AddAppointmentForm = ({
             onChange={handlePaidAmountChange}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 ${
               paidAmountError
-                ? "border-red-500 focus:ring-red-500" // Error state
-                : "border-gray-300 focus:ring-blue-500" // Default state
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
             }`}
             min="0"
             max="500000"
             step="0.01"
           />
-          {/* Display validation error message */}
           {paidAmountError && (
             <p className="text-sm text-red-600 mt-1">{paidAmountError}</p>
           )}
@@ -338,7 +330,7 @@ export const AddAppointmentForm = ({
           </label>
           <input
             type="number"
-            value={formData.pendingBalance}
+            value={balance}
             readOnly
             className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
           />
@@ -356,7 +348,7 @@ export const AddAppointmentForm = ({
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             rows={3}
-            placeholder="Add any additional notes about the appointment..."
+            placeholder="Add any additional notes..."
           />
         </div>
 

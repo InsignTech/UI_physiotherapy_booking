@@ -214,10 +214,13 @@ export const AppointmentManagement = ({ onNavigate }) => {
     });
   };
   const formatDate = (dateString) => {
-    const d = new Date(dateString);
-    return `${String(d.getDate()).padStart(2, "0")}-${String(
-      d.getMonth() + 1
-    ).padStart(2, "0")}-${d.getFullYear()}`;
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   const today = new Date();
@@ -229,11 +232,11 @@ export const AppointmentManagement = ({ onNavigate }) => {
     return aptDate.getTime() === today.getTime();
   });
 
-  const getBalanceColor = (totalAmount, paidAmount) => {
-    const balance = totalAmount - paidAmount;
-    if (balance === 0) return "text-green-600";
-    return "text-orange-600";
-  };
+  // const getBalanceColor = (totalAmount, paidAmount) => {
+  //   const balance = totalAmount - paidAmount;
+  //   if (balance === 0) return "text-green-600";
+  //   return "text-orange-600";
+  // };
 
   const handleAddPatient = () => {
     setShowAddPatientForm(false);
@@ -492,13 +495,17 @@ export const AppointmentManagement = ({ onNavigate }) => {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`font-medium ${getBalanceColor(
-                          appointment.previousBalance,
-                          appointment.totalAmount,
-                          appointment.paidAmount
-                        )}`}
+                        className={`font-medium ${
+                          appointment.totalAmount === 0 &&
+                          appointment.paidAmount > 0
+                            ? "text-green-600"
+                            : "text-orange-600"
+                        }`}
                       >
-                        ₹{appointment.previousBalance}
+                        {appointment.totalAmount === 0 &&
+                        appointment.paidAmount > 0
+                          ? `+ ₹${Math.abs(appointment.previousBalance)}`
+                          : `₹${appointment.previousBalance}`}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
