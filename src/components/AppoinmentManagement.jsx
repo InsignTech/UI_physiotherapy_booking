@@ -503,8 +503,8 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         }`}
                       >
                         {appointment.totalAmount === 0 &&
-                        appointment.paidAmount > 0
-                          ? `+ ₹${Math.abs(appointment.previousBalance)}`
+                        appointment.paidAmount > 0 
+                          ? `+ ₹${(appointment.previousBalance)}`
                           : `₹${appointment.previousBalance}`}
                       </span>
                     </td>
@@ -605,14 +605,12 @@ export const AppointmentManagement = ({ onNavigate }) => {
                           <div className="ml-auto">
                             <div
                               className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium ${
-                                appointment.totalAmount ===
-                                appointment.paidAmount
+                                appointment.previousBalance === 0
                                   ? "bg-green-100 text-green-800"
                                   : "bg-orange-100 text-orange-800"
                               }`}
                             >
-                              {appointment.totalAmount ===
-                              appointment.paidAmount
+                              {appointment.previousBalance === 0
                                 ? "Fully Paid"
                                 : "Pending Payment"}
                             </div>
