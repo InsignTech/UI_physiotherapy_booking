@@ -220,21 +220,21 @@ export const AddAppointmentForm = ({
   };
 
   // Validation
-  useEffect(() => {
-    const total = parseFloat(formData.totalAmount) || 0;
-    const paid = parseFloat(formData.paidAmount) || 0;
-    const pending = parseFloat(balance) || 0;
+  // useEffect(() => {
+  //   const total = parseFloat(formData.totalAmount) || 0;
+  //   const paid = parseFloat(formData.paidAmount) || 0;
+  //   const pending = parseFloat(balance) || 0;
 
-    const maxAllowedPayment = total + pending;
+  //   const maxAllowedPayment = total + pending;
 
-    if (paid > maxAllowedPayment) {
-      setPaidAmountError(
-        `Paid amount cannot exceed the total due of ${maxAllowedPayment}`
-      );
-    } else {
-      setPaidAmountError("");
-    }
-  }, [formData.paidAmount, formData.totalAmount, balance]);
+  //   if (paid > maxAllowedPayment) {
+  //     setPaidAmountError(
+  //       `Paid amount cannot exceed the total due of ${maxAllowedPayment}`
+  //     );
+  //   } else {
+  //     setPaidAmountError("");
+  //   }
+  // }, [formData.paidAmount, formData.totalAmount, balance]);
 
   const isPatientReadonly = selectedPatient || isEdit;
 
