@@ -19,7 +19,7 @@ export const AddAppointmentForm = ({
     totalAmount: "",
     paidAmount: "",
     appointmentDate: new Date().toISOString().split("T")[0],
-    appointmentTime: "",
+    appointmentTime: null,
     notes: "",
   });
 
@@ -157,7 +157,7 @@ export const AddAppointmentForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.appointmentTime || timeError) {
+    if (formData.appointmentTime && timeError) {
       toast.error("Please enter a valid appointment time.");
       return; // This stops the form from submitting
     }
@@ -319,10 +319,17 @@ export const AddAppointmentForm = ({
                   : null
               }
               onChange={(newValue) => {
-                if (newValue) {
+                // Check if the new value is valid
+                if (newValue && newValue.isValid()) {
                   setFormData({
                     ...formData,
                     appointmentTime: newValue.format("hh:mm A"),
+                  });
+                } else {
+                  // If cleared or invalid, set the time back to null
+                  setFormData({
+                    ...formData,
+                    appointmentTime: null,
                   });
                 }
               }}

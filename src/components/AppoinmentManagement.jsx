@@ -279,8 +279,11 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         : "text-red-600 font-semibold"
                     }
                   >
-                    {latestPatient?.previousBalance ?? 0}₹
+                     {latestPatient.previousBalance < 0
+                            ? `+ ₹${-latestPatient.previousBalance}` // credit
+                            : `₹${latestPatient.previousBalance}`}{" "}
                   </span>
+                  
                 </>
               )}
             </p>
@@ -495,21 +498,17 @@ export const AppointmentManagement = ({ onNavigate }) => {
                       ₹{appointment.paidAmount}
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`font-medium ${
-                          appointment.totalAmount === 0 &&
-                          appointment.paidAmount > 0
-                            ? "text-green-600" // Credit case
-                            : "text-orange-600" // Normal pending case
-                        }`}
-                      >
-                        {appointment.totalAmount === 0 &&
-                        appointment.paidAmount > 0 ? (
-                          <>+ ₹{Math.abs(appointment.previousBalance || 0)}</>
-                        ) : (
-                          <>₹{Math.abs(appointment.previousBalance || 0)}</>
-                        )}
-                      </span>
+                        <span
+                          className={`font-medium ${
+                            appointment.previousBalance < 0
+                              ? "text-green-600"
+                              : "text-orange-600"
+                          }`}
+                        >
+                          {appointment.previousBalance < 0
+                            ? `+ ₹${-appointment.previousBalance}` // credit
+                            : `₹${appointment.previousBalance}`}{" "}
+                        </span>
                     </td>
 
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
