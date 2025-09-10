@@ -274,7 +274,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                   {" - Pending Balance: "}
                   <span
                     className={
-                      latestPatient?.previousBalance === 0
+                      latestPatient?.previousBalance <= 0
                         ? "text-green-600 font-semibold"
                         : "text-red-600 font-semibold"
                     }

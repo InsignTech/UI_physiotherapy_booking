@@ -377,32 +377,33 @@ export const AddAppointmentForm = ({
             placeholder="0"
             value={formData.paidAmount}
             onChange={handlePaidAmountChange}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 ${
-              paidAmountError
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-blue-500"
-            }`}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-blue-500`}
             min="0"
             max="500000"
             step="0.01"
           />
-          {paidAmountError && (
+          {/* {paidAmountError && (
             <p className="text-sm text-red-600 mt-1">{paidAmountError}</p>
-          )}
+          )} */}
         </div>
 
         {/* Pending Balance */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pending Balance
-          </label>
-          <input
-            type="number"
-            value={balance}
-            readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-          />
-        </div>
+       <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Pending Balance
+  </label>
+  <input
+    type="text"
+    value={
+      balance < 0
+        ? `+ ₹${Math.abs(balance)}`
+        : `₹${balance}`
+    }
+    readOnly
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+  />
+</div>
+
 
         {/* Notes */}
         <div className="md:col-span-1">
