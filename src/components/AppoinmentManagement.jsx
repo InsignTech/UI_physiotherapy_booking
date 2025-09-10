@@ -498,16 +498,19 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         className={`font-medium ${
                           appointment.totalAmount === 0 &&
                           appointment.paidAmount > 0
-                            ? "text-green-600"
-                            : "text-orange-600"
+                            ? "text-green-600" // Credit case
+                            : "text-orange-600" // Normal pending case
                         }`}
                       >
                         {appointment.totalAmount === 0 &&
-                        appointment.paidAmount > 0 
-                          ? `+ ₹${(appointment.previousBalance)}`
-                          : `₹${appointment.previousBalance}`}
+                        appointment.paidAmount > 0 ? (
+                          <>+ ₹{Math.abs(appointment.previousBalance || 0)}</>
+                        ) : (
+                          <>₹{Math.abs(appointment.previousBalance || 0)}</>
+                        )}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
                       {appointment.notes || "-"}
                     </td>
