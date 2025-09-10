@@ -12,3 +12,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.MuiPickersInputBase-sectionsContainer {
+  padding-top: 11px !important;
+  padding-bottom: 11px !important;
+}

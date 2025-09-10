@@ -11,6 +11,7 @@ import { PatientManagement } from "./components/PatientManagement";
 import { AppointmentManagement } from "./components/AppoinmentManagement";
 import { LoginScreen } from "./components/LoginScreen";
 import {AppointmentCalendarMonitor} from './components/AppointmentCalendarMonitor'
+import "./App.css";
 
 const App = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);

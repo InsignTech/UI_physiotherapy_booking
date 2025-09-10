@@ -58,6 +58,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
   const [patients, setPatients] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddPatientForm, setShowAddPatientForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
@@ -95,8 +96,10 @@ export const AppointmentManagement = ({ onNavigate }) => {
         dateRange.start,
         dateRange.end
       );
+      console.log("appointments fetched", res);
       setAppointments(res.data || []);
       setTotalPages(res.pagination?.totalPages || 1);
+      setTotalRecords(res.pagination?.totalRecords || 0);
     } catch (error) {
       console.error("Failed to fetch appointments", error);
       setAppointments([]);
@@ -483,9 +486,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                       {formatDate(appointment.appointmentDate)}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {appointment.updatedAt
-                        ? `${formatTime(appointment.updatedAt)}`
-                        : formatTime(appointment.createdAt)}
+                      {appointment.appointmentTime || "--:--"}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       ₹{appointment.totalAmount}
@@ -575,9 +576,7 @@ export const AppointmentManagement = ({ onNavigate }) => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock className="w-3 h-3 text-gray-400" />{" "}
-                          {appointment.updatedAt
-                            ? `${formatTime(appointment.updatedAt)} `
-                            : formatTime(appointment.createdAt)}
+                          {appointment.appointmentTime || "--:--"}
                         </div>
                       </div>
                       <div>
@@ -680,6 +679,8 @@ export const AppointmentManagement = ({ onNavigate }) => {
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
+          totalItems={totalRecords} // ✅ use state, not res
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
       </div>

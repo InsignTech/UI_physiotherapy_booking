@@ -68,6 +68,8 @@ export const deletePatient = async (id) => {
 export const getPatientAppointments = async (id, page, limit, startDate,endDate) => {
   try {
     const params = { page, limit };
+    console.log("xfgdfgdfgdfgdf",id,page,limit,startDate,endDate);
+    
     if (id) params.id = id;
     if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
@@ -94,6 +96,7 @@ export const getDashboard = async () => {
 // Add an appointment for a patient
 export const addAppointment = async (appointmentData) => {
   try {
+    console.log("appointment data",appointmentData)
     const response = await PATIENT_INSTANCE.post(`/getAllAppointmnets`, appointmentData);
     return response.data;
   } catch (error) {

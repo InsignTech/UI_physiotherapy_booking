@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { searchPatients, getPatientByID } from "../services/patientApi";
 import { toast } from "react-toastify";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import TextField from "@mui/material/TextField";
+import dayjs from "dayjs";
 
 export const AddAppointmentForm = ({
   onSubmit,
@@ -14,6 +19,7 @@ export const AddAppointmentForm = ({
     totalAmount: "",
     paidAmount: "",
     appointmentDate: new Date().toISOString().split("T")[0],
+    appointmentTime: "",
     notes: "",
   });
 
@@ -51,6 +57,7 @@ export const AddAppointmentForm = ({
           totalAmount: initialData.totalAmount?.toString() || "",
           paidAmount: initialData.paidAmount?.toString() || "",
           appointmentDate: formattedDate,
+          appointmentTime: initialData.appointmentTime || "",
           notes: initialData.notes || "",
         });
 
@@ -71,6 +78,7 @@ export const AddAppointmentForm = ({
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [paidAmountError, setPaidAmountError] = useState("");
+  const [timeError, setTimeError] = useState(null);
 
   // Search patients when typing (only if no selectedPatient and not editing)
   useEffect(() => {
@@ -102,16 +110,15 @@ export const AddAppointmentForm = ({
   }, [searchTerm, selectedPatient, isEdit]);
 
   // Fetch balance if selectedPatient is already passed (Add Appointment without search)
-useEffect(() => {
-  if (selectedPatient && !isEdit) {
-    const loadBalance = async () => {
-      const bal = await fetchPatientBalance(selectedPatient._id);
-      setBalance(bal);
-    };
-    loadBalance();
-  }
-}, [selectedPatient, isEdit]);
-
+  useEffect(() => {
+    if (selectedPatient && !isEdit) {
+      const loadBalance = async () => {
+        const bal = await fetchPatientBalance(selectedPatient._id);
+        setBalance(bal);
+      };
+      loadBalance();
+    }
+  }, [selectedPatient, isEdit]);
 
   const handleTotalAmountChange = (e) => {
     const value = e.target.value;
@@ -139,8 +146,21 @@ useEffect(() => {
     }
   };
 
+  const handleTimeError = (reason) => {
+    if (reason) {
+      setTimeError("Please enter a valid time.");
+    } else {
+      setTimeError(null);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!formData.appointmentTime || timeError) {
+      toast.error("Please enter a valid appointment time.");
+      return; // This stops the form from submitting
+    }
     if (paidAmountError) {
       toast.error(paidAmountError);
       return;
@@ -154,6 +174,7 @@ useEffect(() => {
         totalAmount: parseFloat(formData.totalAmount) || 0,
         paidAmount: parseFloat(formData.paidAmount) || 0,
         appointmentDate: new Date(formData.appointmentDate),
+        appointmentTime: formData.appointmentTime,
         previousBalance: balance, // ✅ use balance here
       });
       return;
@@ -175,6 +196,7 @@ useEffect(() => {
       totalAmount: parseFloat(formData.totalAmount) || 0,
       paidAmount: parseFloat(formData.paidAmount) || 0,
       appointmentDate: new Date(formData.appointmentDate),
+      appointmentTime: formData.appointmentTime,
       previousBalance: balance, // ✅ also pass in add mode
     });
   };
@@ -282,6 +304,45 @@ useEffect(() => {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Appointment Time
+          </label>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <TimePicker
+              sx={{ width: "100%" }}
+              ampm={true}
+              onError={handleTimeError}
+              value={
+                formData.appointmentTime
+                  ? dayjs(formData.appointmentTime, "hh:mm A")
+                  : null
+              }
+              onChange={(newValue) => {
+                if (newValue) {
+                  setFormData({
+                    ...formData,
+                    appointmentTime: newValue.format("hh:mm A"),
+                  });
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={!!timeError}
+                  helperText={timeError}
+                  fullWidth
+                  sx={{
+                    // Keep this part just for the curved border
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              )}
+            />
+          </LocalizationProvider>
+        </div>
         {/* Total Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
